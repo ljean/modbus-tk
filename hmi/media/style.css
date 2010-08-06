@@ -1,0 +1,56 @@
+#main {
+    width: 800px;
+    margin: 0 auto;
+    background: #ddd;
+    padding-bottom: 20px;
+}
+
+h1 {
+    font-size: 1.2em;
+}
+
+.master td, .results td {
+    border: solid thin #eee;
+    padding: 2px 2px 2px 2px;
+    text-align: center;
+}
+
+.breadcrumbs {
+    padding-bottom: 10px;
+    margin-bottom: 20px;
+}
+
+.breadcrumbs td {
+    font-size: small;
+    padding-right: 10px;
+}
+
+.result {
+    text-align:center;
+}
+
+.hover {
+    cursor: pointer;
+}
+
+#polling_commands {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+}
+
+th {
+    vertical-align: bottom;
+}
+
+#poll_rate_input {
+    width: 40px;
+}
+
+.binary_on {
+    background-color: #ff0000;
+}
+
+.binary_off {
+    background-color: #00ff00;
+}
