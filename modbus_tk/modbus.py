@@ -370,8 +370,8 @@ class ModbusBlock:
         Contructor: defines the address range and creates the array of values
         """
         self.starting_address = starting_address
-        self.data = [0]*size
-        self.size = len(self.data)
+        self._data = [0]*size
+        self.size = len(self._data)
         
     def is_in(self, starting_address, size):
         """
@@ -383,6 +383,16 @@ class ModbusBlock:
         elif starting_address < self.starting_address:
             return (starting_address+size)>self.starting_address
         return True
+    
+    def __getitem__(self, r):
+        """"""
+        return self._data.__getitem__(r)
+    
+    def __setitem__(self, r, v):
+        """"""
+        call_hooks("modbus.ModbusBlock.setitem", (self, r, v))
+        return self._data.__setitem__(r, v)
+    
     
 #-------------------------------------------------------------------------------
 class Slave:
@@ -430,7 +440,7 @@ class Slave:
                 
         block, offset = self._get_block_and_offset(block_type, starting_address, quantity_of_x)
         
-        values = block.data[offset:offset+quantity_of_x]
+        values = block[offset:offset+quantity_of_x]
         
         #pack bits in bytes
         byte_count = quantity_of_x / 8
@@ -478,7 +488,7 @@ class Slave:
         block, offset = self._get_block_and_offset(block_type, starting_address, quantity_of_x)
         
         #get the values
-        values = block.data[offset:offset+quantity_of_x]
+        values = block[offset:offset+quantity_of_x]
             
         #write the response header
         response = struct.pack(">B", 2 * quantity_of_x)
@@ -510,7 +520,7 @@ class Slave:
         count = 0
         for i in xrange(quantity_of_x):
             count += 1
-            block.data[offset+i] = struct.unpack(">H", request_pdu[6+2*i:8+2*i])[0]
+            block[offset+i] = struct.unpack(">H", request_pdu[6+2*i:8+2*i])[0]
         
         return struct.pack(">HH", starting_address, count)
         
@@ -537,9 +547,9 @@ class Slave:
             (byte_value, ) = struct.unpack(">B", request_pdu[6+i])
             for j in xrange(8):
                 if byte_value & (1 << j):
-                    block.data[offset+i*8+j] = 1
+                    block[offset+i*8+j] = 1
                 else:
-                    block.data[offset+i*8+j] = 0
+                    block[offset+i*8+j] = 0
                 if count >= quantity_of_x:
                     break
                 count += 1
@@ -549,7 +559,7 @@ class Slave:
         """execute modbus function 6"""
         (data_address, value) = struct.unpack(">HH", request_pdu[1:5])
         block, offset = self._get_block_and_offset(defines.HOLDING_REGISTERS, data_address, 1)
-        block.data[offset] = value
+        block[offset] = value
         return request_pdu[1:] #returns echo of the command
     
     def _write_single_coil(self, request_pdu):
@@ -557,9 +567,9 @@ class Slave:
         (data_address, value) = struct.unpack(">HH", request_pdu[1:5])
         block, offset = self._get_block_and_offset(defines.COILS, data_address, 1)
         if value == 0:
-            block.data[offset] = 0
+            block[offset] = 0
         elif value == 0xff00:
-            block.data[offset] = 1
+            block[offset] = 1
         else:
             raise ModbusError(defines.ILLEGAL_DATA_VALUE)
         return request_pdu[1:] #returns echo of the command
@@ -688,9 +698,9 @@ class Slave:
             
             #if Ok: write the values
             if (type(values) is list) or (type(values) is tuple):
-                block.data[offset:offset+len(values)] = values
+                block[offset:offset+len(values)] = values
             else:
-                block.data[offset] = values
+                block[offset] = values
     
     def get_values(self, block_name, address, size=1):
         """
@@ -708,9 +718,9 @@ class Slave:
             
             #returns the values
             if size == 1:
-                return (block.data[offset],)
+                return (block[offset],)
             else:
-                return tuple(block.data[offset:offset+size])
+                return tuple(block[offset:offset+size])
 
 class Databank:
     """A databank is a shared place containing the data of all slaves"""

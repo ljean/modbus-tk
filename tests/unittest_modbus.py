@@ -15,6 +15,7 @@ import threading
 import struct
 import logging
 import time
+from modbus_tk.hooks import install_hook
 
 LOGGER = modbus_tk.utils.create_logger("udp")
 
@@ -389,6 +390,22 @@ class TestServer(unittest.TestCase):
         self.server.remove_all_slaves()
         for id in slaves:
             self.assertRaises(Exception, self.server.get_slave, id)
+            
+    def testHookOnSetBlockData(self):
+        slave = self.server.add_slave(22)
+        def setblock_hook(args):
+            (block, slice, values) = args 
+            setblock_hook.calls += 1
+        setblock_hook.calls = 0
+        install_hook('modbus.ModbusBlock.setitem', setblock_hook)
+        
+        for block_type in (modbus_tk.defines.COILS, modbus_tk.defines.DISCRETE_INPUTS,
+                           modbus_tk.defines.HOLDING_REGISTERS, modbus_tk.defines.ANALOG_INPUTS):
+            slave.add_block(str(block_type), block_type, 0, 20)
+            slave.set_values(str(block_type), 0, 1)
+            slave.set_values(str(block_type), 5, (1, 0, 1))
+        
+        self.assertEquals(setblock_hook.calls, 8)
         
 if __name__ == '__main__':
     unittest.main(argv = unittest.sys.argv + ['--verbose'])

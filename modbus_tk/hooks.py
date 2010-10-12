@@ -53,7 +53,9 @@ def install_hook(name, fct):
     modbus.Slave.on_handle_broadcast((slave, response_pdu)) returns modified response or None  
     modbus.Slave.on_exception((slave, function_code, excpt))  
     
-    modbus.Databank.on_error((db, excpt, request_pdu))  
+    modbus.Databank.on_error((db, excpt, request_pdu))
+    
+    modbus.ModbusBlock.setitem((self, slice, value))  
     
     modbus.Server.before_handle_request((server, request)) returns modified request or None
     modbus.Server.after_handle_request((server, response)) returns modified response or None
