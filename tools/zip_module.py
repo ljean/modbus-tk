@@ -29,7 +29,8 @@ class ZipArchive:
                     self.archive.write(filename, name, zipfile.ZIP_DEFLATED)
         
     def run(self, folder, name):
-        self.exclude_list = (".svn", ".pyc", "build", "tools", "release", ".egg-info", "dist", ".externalTool", ".settings")
+        self.exclude_list = (".svn", ".pyc", "build", "tools", "release", ".egg-info",
+             "dist", ".externalTool", ".settings", ".hg")
         self.folder = folder
         self.archive = zipfile.ZipFile(name+".zip", "w")
         os.path.walk(self.folder, ZipArchive.zip_it, self)
