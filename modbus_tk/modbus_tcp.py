@@ -106,7 +106,7 @@ class TcpQuery(Query):
     
     def build_request(self, pdu, slave):
         """Add the Modbus TCP part to the request"""
-        if (slave < 0) or (slave >= 256):
+        if (slave < 0) or (slave > 255):
             raise InvalidArgumentError, "%d Invalid value for slave id" % (slave)
         self._request_mbap.length = len(pdu)+1
         self._request_mbap.transaction_id = self._get_transaction_id()

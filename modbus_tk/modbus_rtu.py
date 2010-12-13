@@ -29,7 +29,7 @@ class RtuQuery(Query):
     def build_request(self, pdu, slave):
         """Add the Modbus RTU part to the request"""
         self._request_address = slave
-        if (self._request_address < 0) or (self._request_address > 247):
+        if (self._request_address < 0) or (self._request_address > 255):
             raise InvalidArgumentError, "Invalid address %d" % (self._request_address)
         data = struct.pack(">B", self._request_address) + pdu
         crc = struct.pack(">H", utils.calculate_crc(data))

@@ -119,7 +119,7 @@ class TestRtuQuery(unittest.TestCase):
     def testBuildRequestWithSlave(self):
         """Test the string returned by building a request with a slave"""
         query = modbus_rtu.RtuQuery()
-        for i in xrange(0, 247):
+        for i in xrange(0, 256):
             request = query.build_request("", i)
             expected = struct.pack(">B", i)
             expected_crc = crc16_alternative(expected)
@@ -129,7 +129,7 @@ class TestRtuQuery(unittest.TestCase):
     def testBuildRequestWithInvalidSlave(self):
         """Test that an error is raised when invalid slave is passed"""
         query = modbus_rtu.RtuQuery()
-        for i in (range(248,256)+[-1, 312, 3541, 65536, 65656]):
+        for i in ([256, -1, 312, 3541, 65536, 65656]):
             self.assertRaises(modbus_tk.modbus.InvalidArgumentError, query.build_request, "", i)
 
     def testBuildRequestWithPdu(self):
