@@ -60,9 +60,10 @@ $(document).ready(function () {
                             <tr><th>Slave</th><td><INPUT type="text" value="1" name="slave"/></td></tr>
                             <tr><th>Function Code</th>
                                 <td>
-                                    <SELECT name="function">
-                                        <OPTION VALUE="3">Holding registers</OPTION>
-                                        <OPTION VALUE="1">Coils</OPTION>
+                                    <SELECT name="function">                                       
+                                        <OPTION VALUE="1">Read Coils</OPTION>
+                                        <OPTION VALUE="3">Read Holding Registers</OPTION>
+                                        <OPTION VALUE="4">Read Input Registers</OPTION> 
                                     </SELECT>
                                 </td>
                             </td></tr>
