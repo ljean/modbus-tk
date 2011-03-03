@@ -52,7 +52,7 @@ class Master:
                 try:
                     try:
                         s = SERIAL_PORTS[serial_port]
-                    except:
+                    except IndexError:
                         SERIAL_PORTS[serial_port] = s = serial.Serial(port=serial_port, **kwargs)
                     self.modbus = modbus_rtu.RtuMaster(s)
                 except Exception, msg:
@@ -249,7 +249,7 @@ def show_results_all_hr(master_id, slave_id):
     try:
         for req in requests:
             i = int(req['address'])
-            print "%s, %s, %s"%(int(slave_id), int(req['address']), int(req['length']))
+            #print "%s, %s, %s"%(int(slave_id), int(req['address']), int(req['length']))
             results = master.modbus.execute(int(slave_id), int(3), int(req['address']), int(req['length']))
             for result in results:
                 all_results[i] = {'result': result, 'register_hex': hex(i)}
@@ -286,7 +286,6 @@ def get_json_data(master_id, slave_id, function_code, start_address, length):
     master = APP.get_master(master_id)
     try:
         results = master.modbus.execute(int(slave_id), int(function_code), int(start_address), int(length))
-        print results[0]
         json_data = {}
         i = 0
         for r in results:
