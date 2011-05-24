@@ -32,7 +32,7 @@ class Master:
         if protocol == "tcp":
             try:
                 (host, port) = address.split(":")
-                self.modbus = modbus_tcp.TcpMaster(host, port)
+                self.modbus = modbus_tcp.TcpMaster(str(host), int(port))
             except:
                 self.modbus = modbus_tcp.TcpMaster(address) 
             self.modbus.set_timeout(5.0)
