@@ -280,6 +280,14 @@ class TestQueries(TestQueriesSetupAndTeardown):
         self.assertEqual((1000, 1968), result)
         self.assertEqual(tuple([1]*1968), self.slave1.get_values("c1000-4000", 1000, 1968))
 
+    def testWriteMultipleCoilsIssue23(self):
+        """Write the values of a multiple coils and check that it is correctly written"""
+        slave10 = self.server.add_slave(10)
+        slave10.add_block("block", modbus_tk.defines.COILS, 0, 256)
+        result = self.master.execute(10, modbus_tk.defines.WRITE_MULTIPLE_COILS, 0, output_value=[0, 0, 1, 1]*8)
+        self.assertEqual((0, 32), result)
+        self.assertEqual(tuple([0, 0, 1, 1]*8), slave10.get_values("block", 0, 32))
+
     def testWriteMultipleCoilsOutOfBlocks(self):
         """Check that an error is raised when writing a register out of block"""
         try:
