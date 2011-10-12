@@ -15,6 +15,7 @@ import modbus_tk.modbus_tcp as modbus_tcp
 import threading
 import struct
 import logging
+import sys
 
 LOGGER = modbus_tk.utils.create_logger()
 
@@ -288,4 +289,4 @@ class TestTcpServer(unittest.TestCase):
         self.assertRaises(modbus_tk.modbus.ModbusInvalidRequestError, s._get_request_length, "")
                 
 if __name__ == '__main__':
-    unittest.main(argv = unittest.sys.argv + ['--verbose'])
+    unittest.main(argv = sys.argv)

@@ -206,4 +206,4 @@ class TestTcpSpecific(TestQueriesSetupAndTeardown, unittest.TestCase):
         self.assertEqual(response, struct.pack(">HHHBBB", 0, 0, 3, 1, modbus_tk.defines.WRITE_SINGLE_COIL+128, 3))
 
 if __name__ == '__main__':
-    unittest.main(argv = unittest.sys.argv + ['--verbose'])
+        unittest.main(argv = sys.argv)

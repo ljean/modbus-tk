@@ -22,9 +22,7 @@ import sys
 import serial
 from functest_modbus import TestQueries, TestQueriesSetupAndTeardown
 
-#LOGGER = modbus_tk.utils.create_logger("udp")
-LOGGER = modbus_tk.utils.create_logger(name="console", record_format="%(message)s")
-LOGGER.info("Hello")
+LOGGER = modbus_tk.utils.create_logger("udp")
 
 import os
 if os.name == "nt":
@@ -206,16 +204,15 @@ class RtuTestQueries(TestQueries, unittest.TestCase):
     """Test the modbus protocol over RTU communication"""
     def _get_server(self):
         port = serial.Serial(port=SERVER_PORT, baudrate=9600, bytesize=8, parity='N', stopbits=1, xonxoff=0)
-        x = modbus_rtu.RtuServer(port)
-        x.set_verbose(True)
-        return x
+        server = modbus_rtu.RtuServer(port)
+        #server.set_verbose(True)
+        return server
         
     def _get_master(self):
         port = serial.Serial(port=MASTER_PORT, baudrate=9600, bytesize=8, parity='N', stopbits=1, xonxoff=0)
-        x = modbus_rtu.RtuMaster(port)
-        x.set_verbose(True)
-        return x        
+        master = modbus_rtu.RtuMaster(port)
+        #master.set_verbose(True)
+        return master        
                        
 if __name__ == '__main__':
-    #unittest.main(argv = unittest.sys.argv + ['--verbose'])
-    unittest.main(argv = unittest.sys.argv)
+    unittest.main(argv = sys.argv)

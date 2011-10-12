@@ -16,6 +16,7 @@ import threading
 import struct
 import logging
 import serial
+import sys
 
 LOGGER = modbus_tk.utils.create_logger()
 
@@ -227,4 +228,4 @@ class TestRtuCom(unittest.TestCase):
             self.assertAlmostEqual(modbus_tk.utils.calculate_rtu_inter_char(baudrates[i]), ts[i], places=place[i])
         
 if __name__ == '__main__':
-    unittest.main(argv = unittest.sys.argv + ['--verbose'])
+    unittest.main(argv = sys.argv)

@@ -91,4 +91,4 @@ class TestStress(unittest.TestCase):
         self.assert_(q.empty())
                        
 if __name__ == '__main__':
-    unittest.main(argv = unittest.sys.argv + ['--verbose'])
+    unittest.main(argv = sys.argv)

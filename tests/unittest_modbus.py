@@ -15,6 +15,7 @@ import threading
 import struct
 import logging
 import time
+import sys
 from modbus_tk.hooks import install_hook
 
 LOGGER = modbus_tk.utils.create_logger("udp")
@@ -408,4 +409,4 @@ class TestServer(unittest.TestCase):
         self.assertEquals(setblock_hook.calls, 8)
         
 if __name__ == '__main__':
-    unittest.main(argv = unittest.sys.argv + ['--verbose'])
+    unittest.main(argv = sys.argv)
