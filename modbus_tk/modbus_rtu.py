@@ -146,7 +146,7 @@ class RtuServer(Server):
         LOGGER.info("RtuServer %s is %s" % (self._serial.portstr, "opened" if self._serial.isOpen() else "closed"))
         self._t0 = utils.calculate_rtu_inter_char(self._serial.baudrate)
         self._serial.interCharTimeout = 1.5 * self._t0
-        self._serial.timeout = 5 * self._t0
+        self._serial.timeout = 10 * self._t0
 
     def close(self):
         """close the serial communication"""
