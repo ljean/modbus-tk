@@ -15,7 +15,7 @@
 	<property name="tools.dir" value="tools"/>
 	<property name="pydoc.dir" value="docs"/>
 	<property name="test.dir" value="tests"/>
-	<property name="version" value="0.4.1"/>
+	<property name="version" value="0.4.2"/>
 	<property name="release.dir" value="release"/>
 	
 	<target name="init">
