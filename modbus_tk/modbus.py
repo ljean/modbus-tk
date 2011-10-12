@@ -288,6 +288,32 @@ class Master:
             if expected_length < 0:  #No lenght was specified and calculated length can be used:
                 expected_length = 8  #slave + func + adress1 + adress2 + outputQuant1 + outputQuant2 + crc1 + crc2
 
+        elif function_code == defines.READ_EXCEPTION_STATUS:
+            pdu = struct.pack(">B", function_code)
+            data_format = ">B"
+            if expected_length < 0:  #No lenght was specified and calculated length can be used:
+                expected_length = 5
+
+        elif function_code == defines.DIAGNOSTIC:
+            pdu = struct.pack(">BH", function_code, starting_address)           #SubFuncCode  are in   starting_address      
+            if len(output_value) > 0:
+                for j in output_value:
+                    pdu += struct.pack(">B", j)                                 #copy data in pdu
+                if not data_format:
+                    data_format = ">"+(len(output_value)*"B")
+                if expected_length < 0:  #No lenght was specified and calculated length can be used:
+                    expected_length = len(output_value) + 6 #slave + func + SubFunc1 + SubFunc2 + Data + crc1 + crc2
+                    
+        elif function_code == defines.READ_WRITE_MULTIPLE_REGISTERS:
+            is_read_function = True
+            byte_count = 2 * len(output_value)
+            pdu = struct.pack(">BHHHHB", function_code, starting_address, quantity_of_x, starting_addressW_FC23, len(output_value), byte_count)
+            for j in output_value:
+                pdu += struct.pack(">H", j)                                 #copy data in pdu    
+            if not data_format:
+                data_format = ">"+(quantity_of_x*"H")
+            if expected_length < 0:  #No lenght was specified and calculated length can be used:
+                expected_length = 2*quantity_of_x + 5  #slave + func + bytcodeLen + bytecode x 2 + crc1 + crc2              
         else:
             raise ModbusFunctionNotSupportedError("The %d function code is not supported. " % (function_code))
 
