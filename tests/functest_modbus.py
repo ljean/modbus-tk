@@ -259,7 +259,7 @@ class TestQueries(TestQueriesSetupAndTeardown):
         self.assertEqual(tuple(range(123)), self.slave1.get_values("hr1000-1500", 1000, 123))
         
     def testWriteMultipleRegistersNegativeValue(self):
-        """Write the values of a multiple registers and check that it is correctly written"""
+        """Write the values of a multiple registers with negative values and check that it is correctly written"""
         result = self.master.execute(1, modbus_tk.defines.WRITE_MULTIPLE_REGISTERS, 0, 
             output_value=(0, -5, 10), output_format="HhH")
         self.assertEqual((0, 3), result)
