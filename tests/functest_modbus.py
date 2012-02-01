@@ -204,11 +204,11 @@ class TestQueries(TestQueriesSetupAndTeardown):
         
     def testWriteSingleRegisterNegativeValue(self):
         """Write a negative value of a single register and check that it is correctly written"""
-        result = self.master.execute(1, modbus_tk.defines.WRITE_SINGLE_REGISTER, 0, output_value=-123, output_format="h")
+        result = self.master.execute(1, modbus_tk.defines.WRITE_SINGLE_REGISTER, 0, output_value=-123)
         self.assertEqual((0, 0x10000-123), result)
         self.assertEqual((0x10000-123,), self.slave1.get_values("hr0-100", 0, 1))
         
-        result = self.master.execute(1, modbus_tk.defines.WRITE_SINGLE_REGISTER, 10, output_value=-23, output_format="h")
+        result = self.master.execute(1, modbus_tk.defines.WRITE_SINGLE_REGISTER, 10, output_value=-23)
         self.assertEqual((10, 0x10000-23), result)
         self.assertEqual((0x10000-23,), self.slave1.get_values("hr0-100", 10, 1))
         
@@ -260,8 +260,7 @@ class TestQueries(TestQueriesSetupAndTeardown):
         
     def testWriteMultipleRegistersNegativeValue(self):
         """Write the values of a multiple registers with negative values and check that it is correctly written"""
-        result = self.master.execute(1, modbus_tk.defines.WRITE_MULTIPLE_REGISTERS, 0, 
-            output_value=(0, -5, 10), output_format="HhH")
+        result = self.master.execute(1, modbus_tk.defines.WRITE_MULTIPLE_REGISTERS, 0, output_value=(0, -5, 10))
         self.assertEqual((0, 3), result)
         self.assertEqual((0, 0x10000-5, 10), self.slave1.get_values("hr0-100", 0, 3))
         
