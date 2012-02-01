@@ -208,8 +208,8 @@ class Master:
         raise NotImplementedError()
     
     @threadsafe_function
-    def execute(self, slave, function_code, starting_address,
-                quantity_of_x=0, output_value=0, data_format="", expected_length=-1):
+    def execute(self, slave, function_code, starting_address, quantity_of_x=0, 
+            output_value=0, data_format="", expected_length=-1, output_format=None):
         """
         Execute a modbus query and returns the data part of the answer as a tuple
         The returned tuple depends on the query function code. see modbus protocol
@@ -251,7 +251,11 @@ class Master:
             if function_code == defines.WRITE_SINGLE_COIL:
                 if output_value != 0:
                     output_value = 0xff00
-            pdu = struct.pack(">BHH", function_code, starting_address, output_value)
+            if output_format:
+                fmt = ">BH"+output_format
+            else:
+                fmt = ">BHH"
+            pdu = struct.pack(fmt, function_code, starting_address, output_value)
             if not data_format:
                 data_format = ">HH"
             if expected_length < 0:  #No lenght was specified and calculated length can be used:
@@ -281,8 +285,9 @@ class Master:
         elif function_code == defines.WRITE_MULTIPLE_REGISTERS:
             byte_count = 2 * len(output_value)
             pdu = struct.pack(">BHHB", function_code, starting_address, len(output_value), byte_count)
-            for j in output_value:
-                pdu += struct.pack(">H", j)
+            for idx, j in enumerate(output_value):
+                fmt = output_format[idx] if output_format else "H" 
+                pdu += struct.pack(">"+fmt, j)
             if not data_format:
                 data_format = ">HH"
             if expected_length < 0:  #No lenght was specified and calculated length can be used:
@@ -295,10 +300,11 @@ class Master:
                 expected_length = 5
 
         elif function_code == defines.DIAGNOSTIC:
-            pdu = struct.pack(">BH", function_code, starting_address)           #SubFuncCode  are in   starting_address      
+            pdu = struct.pack(">BH", function_code, starting_address) #SubFuncCode  are in   starting_address      
             if len(output_value) > 0:
-                for j in output_value:
-                    pdu += struct.pack(">B", j)                                 #copy data in pdu
+                for idx, j in enumerate(output_value):
+                    fmt = output_format[idx] if output_format else "B" 
+                    pdu += struct.pack(">"+fmt, j) #copy data in pdu
                 if not data_format:
                     data_format = ">"+(len(output_value)*"B")
                 if expected_length < 0:  #No lenght was specified and calculated length can be used:
@@ -308,8 +314,9 @@ class Master:
             is_read_function = True
             byte_count = 2 * len(output_value)
             pdu = struct.pack(">BHHHHB", function_code, starting_address, quantity_of_x, starting_addressW_FC23, len(output_value), byte_count)
-            for j in output_value:
-                pdu += struct.pack(">H", j)                                 #copy data in pdu    
+            for idx, j in enumerate(output_value):
+                fmt = output_format[idx] if output_format else "H" 
+                pdu += struct.pack(">"+fmt, j)#copy data in pdu    
             if not data_format:
                 data_format = ">"+(quantity_of_x*"H")
             if expected_length < 0:  #No lenght was specified and calculated length can be used:
