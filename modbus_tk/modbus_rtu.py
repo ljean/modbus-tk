@@ -14,7 +14,7 @@ from modbus import *
 import logging
 import sys
 import time
-from hooks import call_hooks 
+from hooks import call_hooks
 
 #-------------------------------------------------------------------------------
 class RtuQuery(Query):
@@ -75,7 +75,7 @@ class RtuQuery(Query):
 #-------------------------------------------------------------------------------
 class RtuMaster(Master):
     """Subclass of Master. Implements the Modbus RTU MAC layer"""
-    
+
     def __init__(self, serial, interchar_multiplier=1.5):
         """Constructor. Pass the pyserial.Serial object"""
         self._serial = serial
@@ -83,7 +83,7 @@ class RtuMaster(Master):
         Master.__init__(self, self._serial.timeout)
         self._t0 = utils.calculate_rtu_inter_char(self._serial.baudrate)
         self._serial.interCharTimeout = interchar_multiplier * self._t0
-        self._serial.timeout = interchar_multiplier * self._t0
+        #self._serial.timeout = interchar_multiplier * self._t0
 
     def _do_open(self):
         """Open the given serial port if not already opened"""
