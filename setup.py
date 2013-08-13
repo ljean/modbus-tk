@@ -12,7 +12,7 @@
 from setuptools import setup
 import sys, os
 
-version = '0.4'
+version = '0.4.2'
 
 setup(name = 'modbus_tk',
     version = version,
