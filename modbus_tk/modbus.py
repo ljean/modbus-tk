@@ -430,9 +430,13 @@ class Slave:
     asked by a modbus query
     """
 
-    def __init__(self, id):
+    def __init__(self, id, unsigned=True):
         """Constructor"""
         self._id = id
+
+        # treat every value written to/read from register as an unsigned value
+        self.unsigned = unsigned
+
         self._blocks = {} # the map registring all blocks of the slave
         # a shortcut to find blocks per type
         self._memory = {1:[], 2:[], 3:[], 4:[]}
@@ -493,7 +497,8 @@ class Slave:
 
         #if there is remaining bits: add one more byte with their values
         if i > 0:
-            response += struct.pack(">B", byte_value)
+            fmt = "B" if self.unsigned else "b"
+            response += struct.pack(">"+tmp, byte_value)
         return response
 
     def _read_coils(self, request_pdu):
@@ -525,7 +530,8 @@ class Slave:
         response = struct.pack(">B", 2 * quantity_of_x)
         #add the values of every register on 2 bytes
         for reg in values:
-            response += struct.pack(">H", reg)
+            fmt = "H" if self.unsigned else "h"
+            response += struct.pack(">"+fmt, reg)
         return response
 
     def _read_holding_registers(self, request_pdu):
@@ -554,7 +560,8 @@ class Slave:
         count = 0
         for i in xrange(quantity_of_x):
             count += 1
-            block[offset+i] = struct.unpack(">H", request_pdu[6+2*i:8+2*i])[0]
+            fmt = "H" if self.unsigned else "h"
+            block[offset+i] = struct.unpack(">"+fmt, request_pdu[6+2*i:8+2*i])[0]
 
         return struct.pack(">HH", starting_address, count)
 
@@ -579,7 +586,8 @@ class Slave:
         for i in xrange(byte_count):
             if count >= quantity_of_x:
                 break
-            (byte_value, ) = struct.unpack(">B", request_pdu[6+i])
+            fmt = "B" if self.unsigned else "b"
+            (byte_value, ) = struct.unpack(">"+tmp, request_pdu[6+i])
             for j in xrange(8):
                 if byte_value & (1 << j):
                     block[offset+i*8+j] = 1
@@ -593,15 +601,19 @@ class Slave:
     def _write_single_register(self, request_pdu):
         """execute modbus function 6"""
         call_hooks("modbus.Slave.handle_write_single_register_request", (self, request_pdu))
-        (data_address, value) = struct.unpack(">HH", request_pdu[1:5])
+
+        fmt = "H" if self.unsigned else "h"
+        (data_address, value) = struct.unpack(">H"+fmt, request_pdu[1:5])
         block, offset = self._get_block_and_offset(defines.HOLDING_REGISTERS, data_address, 1)
         block[offset] = value
         return request_pdu[1:] #returns echo of the command
 
     def _write_single_coil(self, request_pdu):
         """execute modbus function 5"""
+        fmt = "H" if self.unsigned else "h"
+
         call_hooks("modbus.Slave.handle_write_single_coil_request", (self, request_pdu))
-        (data_address, value) = struct.unpack(">HH", request_pdu[1:5])
+        (data_address, value) = struct.unpack(">H"+fmt, request_pdu[1:5])
         block, offset = self._get_block_and_offset(defines.COILS, data_address, 1)
         if value == 0:
             block[offset] = 0
@@ -767,13 +779,13 @@ class Databank:
         self._slaves = {} # the map of slaves by ids
         self._lock = threading.Lock() # protect access to the map of slaves
 
-    def add_slave(self, slave_id):
+    def add_slave(self, slave_id, unsigned=True):
         """Add a new slave with the given id"""
         with self._lock: #thread-safe
             if (slave_id <= 0) or (slave_id > 255):
                 raise Exception, "Invalid slave id %d" % (slave_id)
             if not self._slaves.has_key(slave_id):
-                self._slaves[slave_id] = Slave(slave_id)
+                self._slaves[slave_id] = Slave(slave_id, unsigned)
                 return self._slaves[slave_id]
             else:
                 raise DuplicatedKeyError, "Slave %d already exists" % (slave_id)
@@ -872,9 +884,9 @@ class Server:
         """returns the databank"""
         return self._databank
 
-    def add_slave(self, slave_id):
+    def add_slave(self, slave_id, unsigned=True):
         """add slave to the server"""
-        return self._databank.add_slave(slave_id)
+        return self._databank.add_slave(slave_id, unsigned)
 
     def get_slave(self, slave_id):
         """get the slave with the given id"""
