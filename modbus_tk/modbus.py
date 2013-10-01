@@ -498,7 +498,7 @@ class Slave:
         #if there is remaining bits: add one more byte with their values
         if i > 0:
             fmt = "B" if self.unsigned else "b"
-            response += struct.pack(">"+tmp, byte_value)
+            response += struct.pack(">"+fmt, byte_value)
         return response
 
     def _read_coils(self, request_pdu):
@@ -587,7 +587,7 @@ class Slave:
             if count >= quantity_of_x:
                 break
             fmt = "B" if self.unsigned else "b"
-            (byte_value, ) = struct.unpack(">"+tmp, request_pdu[6+i])
+            (byte_value, ) = struct.unpack(">"+fmt, request_pdu[6+i])
             for j in xrange(8):
                 if byte_value & (1 << j):
                     block[offset+i*8+j] = 1
