@@ -920,8 +920,8 @@ class Server:
 
     def _run_server(self):
         """main function of the main thread"""
+        self._do_init()
         try:
-            self._do_init()
             while self._go.isSet():
                 self._do_run()
             LOGGER.info("%s has stopped" % self.__class__)
