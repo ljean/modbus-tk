@@ -231,9 +231,13 @@ class TcpMaster(Master):
 
 
 class TcpServer(Server):
-    """This class implements a simple and mono-threaded modbus tcp server"""
+    """
+    This class implements a simple and mono-threaded modbus tcp server
+    !! Change in 0.5.0: By default the TcpServer is not bound to a specific address
+    for example: You must set address to 'loaclhost', if youjust want to accept local connections
+    """
 
-    def __init__(self, port=502, address='localhost', timeout_in_sec=1, databank=None):
+    def __init__(self, port=502, address='', timeout_in_sec=1, databank=None):
         """Constructor: initializes the server settings"""
         super(TcpServer, self).__init__(databank if databank else Databank())
         self._sock = None
