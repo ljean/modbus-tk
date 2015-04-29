@@ -1,0 +1,2 @@
+pylint==1.4.3
+pyserial==2.7
