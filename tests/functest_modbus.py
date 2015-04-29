@@ -50,6 +50,7 @@ class TestQueriesSetupAndTeardown:
         self.master.close()
         self.server.stop()
 
+
 class TestQueries(TestQueriesSetupAndTeardown):
     """This is not a test case, but can be used by Rtu and Tcp test cases"""
     
@@ -296,6 +297,14 @@ class TestQueries(TestQueriesSetupAndTeardown):
         self.assertEqual((1000, 1968), result)
         self.assertEqual(tuple([1]*1968), self.slave1.get_values("c1000-4000", 1000, 1968))
 
+    def testWriteMultipleCoilsOffByOne(self):
+        """Test that correct coils are written at range edges by writing range within range"""
+        result = self.master.execute(1, modbus_tk.defines.WRITE_MULTIPLE_COILS, 0, output_value=[1]*20)
+        self.assertEqual((0, 20), result)
+        result = self.master.execute(1, modbus_tk.defines.WRITE_MULTIPLE_COILS, 5, output_value=[0]*10)
+        self.assertEqual((5, 10), result)
+        self.assertEqual(tuple([1]*5+[0]*10+[1]*5), self.slave1.get_values("c0-100", 0, 20))
+
     def testWriteMultipleCoilsIssue23(self):
         """Write the values of a multiple coils and check that it is correctly written"""
         slave10 = self.server.add_slave(10)
@@ -367,6 +376,4 @@ class TestQueries(TestQueriesSetupAndTeardown):
             response = self.server._databank.handle_request(query, request)
             expected_response = struct.pack(">BB", rc, modbus_tk.defines.SLAVE_DEVICE_FAILURE) 
             self.assertEquals(expected_response, response)
-        
-        
-                       
+

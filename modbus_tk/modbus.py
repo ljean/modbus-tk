@@ -537,12 +537,14 @@ class Slave(object):
             fmt = "B" if self.unsigned else "b"
             (byte_value, ) = struct.unpack(">"+fmt, request_pdu[6+i])
             for j in xrange(8):
+                if count >= quantity_of_x:
+                    break
+
                 if byte_value & (1 << j):
                     block[offset+i*8+j] = 1
                 else:
                     block[offset+i*8+j] = 0
-                if count >= quantity_of_x:
-                    break
+
                 count += 1
         return struct.pack(">HH", starting_address, count)
 

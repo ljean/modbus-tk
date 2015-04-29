@@ -336,7 +336,8 @@ class TestSlaveBlocks(unittest.TestCase):
         map(avoid_duplicates, all_values)
 
         self.assertEqual(vals, expected_values)
-        
+
+
 class TestServer(unittest.TestCase):
     def setUp(self):
         self.server = modbus_tk.modbus.Server()

@@ -23,6 +23,7 @@ from functest_modbus import TestQueries, TestQueriesSetupAndTeardown
 
 LOGGER = modbus_tk.utils.create_logger("udp")
 
+
 class TestConnection(unittest.TestCase):
     """Test the TcpMbap class"""
     def setUp(self):
@@ -206,4 +207,4 @@ class TestTcpSpecific(TestQueriesSetupAndTeardown, unittest.TestCase):
         self.assertEqual(response, struct.pack(">HHHBBB", 0, 0, 3, 1, modbus_tk.defines.WRITE_SINGLE_COIL+128, 3))
 
 if __name__ == '__main__':
-        unittest.main(argv = sys.argv)
+        unittest.main(argv=sys.argv)
