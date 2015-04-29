@@ -127,7 +127,7 @@ class RtuMaster(Master):
         response = ""
         read_bytes = "dummy"
         while read_bytes:
-            read_bytes = self._serial.read(1)
+            read_bytes = self._serial.read(expected_length if expected_length > 0 else 1)
             response += read_bytes
             if expected_length >= 0 and len(response) >= expected_length:
                 #if the expected number of byte is received consider that the response is done
