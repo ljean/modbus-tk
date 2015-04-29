@@ -168,6 +168,7 @@ class TcpMaster(Master):
             self._sock.close()
         self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.set_timeout(self.get_timeout())
+        self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         call_hooks("modbus_tcp.TcpMaster.before_connect", (self, ))
         self._sock.connect((self._host, self._port))
         call_hooks("modbus_tcp.TcpMaster.after_connect", (self, ))
