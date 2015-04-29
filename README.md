@@ -27,7 +27,7 @@ modbus-tk has no link with tkInter. tk stands for 'testkit' or 'toolkit' dependi
 
 Discussion group
 ------------------------------------
-Please join the modbus-tk discussion group to participate
+Please join the modbus-tk discussion group to participate : https://groups.google.com/forum/?hl=fr#!forum/modbus-tk
 
 Features
 ------------------------------------
