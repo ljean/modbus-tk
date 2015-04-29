@@ -10,18 +10,18 @@
 """
 
 from setuptools import setup
-import sys, os
 
-version = '0.4.2'
+VERSION = '0.4.3'
 
-setup(name = 'modbus_tk',
-    version = version,
-    description = "Implementation of modbus protocol in python",
+setup(
+    name='modbus_tk',
+    version=VERSION,
+    description="Implementation of modbus protocol in python",
     long_description='''
     Modbus Test Kit provides implementation of slave and master for Modbus TCP and RTU 
     The main goal is to be used as testing tools.
     ''',
-    classifiers = [
+    classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Environment :: Console',
         'Intended Audience :: Developers',
@@ -31,13 +31,13 @@ setup(name = 'modbus_tk',
         'Topic :: Communications',
         'Topic :: Software Development'
     ],
-    keywords = 'modbus, serial, tcp',
-    author = 'Luc Jean',
-    author_email = 'luc.jean@gmail.com',
-    maintainer = 'Luc Jean',
-    maintainer_email = 'luc.jean@gmail.com',
+    keywords='modbus, serial, tcp',
+    author='Luc Jean',
+    author_email='luc.jean@gmail.com',
+    maintainer='Luc Jean',
+    maintainer_email='luc.jean@gmail.com',
     url='http://code.google.com/p/modbus-tk/',
-    license = 'LGPL',
+    license='LGPL',
     packages=['modbus_tk'],
-    platforms = ["Linux","Mac OS X","Win"],
-    )
+    platforms=["Linux", "Mac OS X", "Win"],
+)

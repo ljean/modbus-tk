@@ -12,8 +12,9 @@
 from __future__ import with_statement
 import threading
 
-_lock = threading.RLock()
-_hooks = {}
+_LOCK = threading.RLock()
+_HOOKS = {}
+
 
 def install_hook(name, fct):
     """
@@ -70,27 +71,29 @@ def install_hook(name, fct):
     modbus.Server.before_handle_request((server, request)) returns modified request or None
     modbus.Server.after_handle_request((server, response)) returns modified response or None
     """
-    with _lock:
+    with _LOCK:
         try:
-            _hooks[name].append(fct)
+            _HOOKS[name].append(fct)
         except KeyError:
-            _hooks[name] = [fct]
+            _HOOKS[name] = [fct]
+
 
 def uninstall_hook(name, fct=None):
     """remove the function from the hooks"""
-    with _lock:
+    with _LOCK:
         if fct:
-            _hooks[name].remove(fct)
+            _HOOKS[name].remove(fct)
         else:
-            del _hooks[name][:]
+            del _HOOKS[name][:]
+
 
 def call_hooks(name, args):
     """call the function associated with the hook and pass the given args"""
-    with _lock:
+    with _LOCK:
         try:
-            for fct in _hooks[name]:
+            for fct in _HOOKS[name]:
                 retval = fct(args)
-                if retval <> None:
+                if retval is not None:
                     return retval
         except KeyError:
             pass
