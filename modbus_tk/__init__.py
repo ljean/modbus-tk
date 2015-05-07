@@ -13,7 +13,14 @@
  the modbus stack in python
 
 contributors:
+----------------------------------
+* OrangeTux
+* denisstogl
 * MELabs
+* idahogray
+* riaan.doorduin
+* tor.sjowall
+* smachin1000
 
 """
 
