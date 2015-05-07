@@ -84,14 +84,14 @@ class RtuQuery(Query):
 class RtuMaster(Master):
     """Subclass of Master. Implements the Modbus RTU MAC layer"""
 
-    def __init__(self, serial, interchar_multiplier=1.5):
+    def __init__(self, serial, interchar_multiplier=1.5, interframe_multiplier=3.5):
         """Constructor. Pass the pyserial.Serial object"""
         self._serial = serial
         LOGGER.info("RtuMaster %s is %s", self._serial.portstr, "opened" if self._serial.isOpen() else "closed")
         super(RtuMaster, self).__init__(self._serial.timeout)
         self._t0 = utils.calculate_rtu_inter_char(self._serial.baudrate)
         self._serial.interCharTimeout = interchar_multiplier * self._t0
-        #self._serial.timeout = interchar_multiplier * self._t0
+        self.set_timeout(interframe_multiplier * self._t0)
 
     def _do_open(self):
         """Open the given serial port if not already opened"""
@@ -120,7 +120,7 @@ class RtuMaster(Master):
         self._serial.flushOutput()
 
         self._serial.write(request)
-        time.sleep(3.5 * self._t0)
+        time.sleep(self.get_timeout())
 
     def _recv(self, expected_length=-1):
         """Receive the response from the slave"""
@@ -146,15 +146,27 @@ class RtuMaster(Master):
 
 class RtuServer(Server):
     """This class implements a simple and mono-threaded modbus rtu server"""
+    _timeout = 0
 
-    def __init__(self, serial, databank=None):
-        """Constructor: initializes the server settings"""
+    def __init__(self, serial, databank=None, **kwargs):
+        """
+        Constructor: initializes the server settings
+        serial: a pyserial object
+        databank: the data to access
+        interframe_multiplier: 3.5 by default
+        interchar_multiplier: 1.5 by default
+        """
+        interframe_multiplier = kwargs.pop('interframe_multiplier', 3.5)
+        interchar_multiplier = kwargs.pop('interchar_multiplier', 1.5)
+
         super(RtuServer, self).__init__(self, databank if databank else Databank())
+
         self._serial = serial
         LOGGER.info("RtuServer %s is %s", self._serial.portstr, "opened" if self._serial.isOpen() else "closed")
+
         self._t0 = utils.calculate_rtu_inter_char(self._serial.baudrate)
-        self._serial.interCharTimeout = 1.5 * self._t0
-        self._serial.timeout = 10 * self._t0
+        self._serial.interCharTimeout = self.interchar_multiplier * self._t0
+        self.set_timeout(self.interframe_multiplier * self._t0)
 
     def close(self):
         """close the serial communication"""
@@ -162,6 +174,13 @@ class RtuServer(Server):
             call_hooks("modbus_rtu.RtuServer.before_close", (self, ))
             self._serial.close()
             call_hooks("modbus_rtu.RtuServer.after_close", (self, ))
+
+    def set_timeout(self, timeout):
+        self._timeout = timeout
+        self._serial.timeout = timeout
+
+    def get_timeout(self):
+        return self._timeout
 
     def __del__(self):
         """Destructor"""
@@ -211,7 +230,7 @@ class RtuServer(Server):
 
                 if response:
                     self._serial.write(response)
-                    time.sleep(3.5 * self._t0)
+                    time.sleep(self.get_timeout())
 
         except Exception as excpt:
             LOGGER.error("Error while handling request, Exception occurred: %s", excpt)

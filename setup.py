@@ -10,8 +10,8 @@
 """
 
 from setuptools import setup
+from modbus_tk import VERSION
 
-VERSION = '0.4.3'
 
 setup(
     name='modbus_tk',

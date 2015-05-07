@@ -118,8 +118,8 @@ def create_logger(name="dummy", level=logging.DEBUG, record_format=None):
 
 def swap_bytes(word_val):
     """swap lsb and msb of a word"""
-    msb = word_val >> 8
-    lsb = word_val % 256
+    msb = (word_val >> 8) & 0xFF
+    lsb = word_val & 0xFF
     return (lsb << 8) + msb
 
 
