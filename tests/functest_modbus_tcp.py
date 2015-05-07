@@ -9,17 +9,19 @@
  This is distributed under GNU LGPL license, see license.txt
 """
 
+import socket
+import struct
+import sys
+import threading
+import time
 import unittest
+import Queue
+
 import modbus_tk
 import modbus_tk.modbus_tcp as modbus_tcp
-import threading
-import struct
-import logging
-import socket
 import modbus_tk.utils as utils
-import time
-import sys
-from functest_modbus import TestQueries, TestQueriesSetupAndTeardown
+
+from functest_modbus import TestQueries, TestQueriesSetupAndTeardown, SharedDataTest
 
 LOGGER = modbus_tk.utils.create_logger("udp")
 
@@ -168,11 +170,11 @@ class TestTcpSpecific(TestQueriesSetupAndTeardown, unittest.TestCase):
     def testMultiThreadAccess(self):
         """check that the modbus call are thread safe"""
 
-        slaves = []
-        slaves.append(self.server.add_slave(11))
-        slaves.append(self.server.add_slave(12))
-        import Queue
-        
+        slaves = [
+            self.server.add_slave(11),
+            self.server.add_slave(12),
+        ]
+
         q = Queue.Queue()
 
         for s in slaves:
@@ -201,10 +203,20 @@ class TestTcpSpecific(TestQueriesSetupAndTeardown, unittest.TestCase):
         self.assert_(q.empty())
             
     def testWriteSingleCoilInvalidValue(self):
-        """Check taht an error is raised when writing a coil with an invalid value"""
+        """Check that an error is raised when writing a coil with an invalid value"""
         self.master._send(struct.pack(">HHHBBHH", 0, 0, 6, 1, modbus_tk.defines.WRITE_SINGLE_COIL, 0, 1))
         response = self.master._recv()
         self.assertEqual(response, struct.pack(">HHHBBB", 0, 0, 3, 1, modbus_tk.defines.WRITE_SINGLE_COIL+128, 3))
+
+
+class TcpSharedDataTest(SharedDataTest, unittest.TestCase):
+
+    def _get_server(self):
+        return modbus_tcp.TcpServer()
+
+    def _get_master(self):
+        return modbus_tcp.TcpMaster()
+
 
 if __name__ == '__main__':
         unittest.main(argv=sys.argv)

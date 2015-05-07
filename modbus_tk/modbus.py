@@ -377,7 +377,7 @@ class Slave(object):
     asked by a modbus query
     """
 
-    def __init__(self, slave_id, unsigned=True):
+    def __init__(self, slave_id, unsigned=True, memory=None):
         """Constructor"""
         self._id = slave_id
 
@@ -387,7 +387,15 @@ class Slave(object):
         # the map registring all blocks of the slave
         self._blocks = {}
         # a shortcut to find blocks per type
-        self._memory = {1: [], 2: [], 3: [], 4: []}
+        if memory is None:
+            self._memory = {
+                defines.COILS: [],
+                defines.DISCRETE_INPUTS: [],
+                defines.HOLDING_REGISTERS: [],
+                defines.ANALOG_INPUTS: [],
+            }
+        else:
+            self._memory = memory
         # a lock for mutual access to the _blocks and _memory maps
         self._data_lock = threading.RLock()
         #map modbus function code to a function:
@@ -415,7 +423,7 @@ class Slave(object):
         """read the value of coils and discrete inputs"""
         (starting_address, quantity_of_x) = struct.unpack(">HH", request_pdu[1:5])
 
-        if (quantity_of_x <= 0) or (quantity_of_x>2000):
+        if (quantity_of_x <= 0) or (quantity_of_x > 2000):
             # maximum allowed size is 2000 bits in one reading
             raise ModbusError(defines.ILLEGAL_DATA_VALUE)
 
@@ -591,13 +599,15 @@ class Slave(object):
                 (function_code, ) = struct.unpack(">B", request_pdu[0])
 
                 # check if the function code is valid. If not returns error response
-                if not self._fn_code_map.has_key(function_code):
+                if function_code not in self._fn_code_map:
                     raise ModbusError(defines.ILLEGAL_FUNCTION)
 
                 # if read query is broadcasted raises an error
                 cant_be_broadcasted = (
-                    defines.READ_COILS, defines.READ_DISCRETE_INPUTS,
-                    defines.READ_INPUT_REGISTERS, defines.READ_HOLDING_REGISTERS
+                    defines.READ_COILS,
+                    defines.READ_DISCRETE_INPUTS,
+                    defines.READ_INPUT_REGISTERS,
+                    defines.READ_HOLDING_REGISTERS
                 )
                 if broadcast and (function_code in cant_be_broadcasted):
                     raise ModbusInvalidRequestError("Function %d can not be broadcasted" % function_code)
@@ -749,13 +759,13 @@ class Databank(object):
         # protect access to the map of slaves
         self._lock = threading.RLock()
 
-    def add_slave(self, slave_id, unsigned=True):
+    def add_slave(self, slave_id, unsigned=True, memory=None):
         """Add a new slave with the given id"""
         with self._lock:
             if (slave_id <= 0) or (slave_id > 255):
                 raise Exception("Invalid slave id {0}".format(slave_id))
             if slave_id not in self._slaves:
-                self._slaves[slave_id] = Slave(slave_id, unsigned)
+                self._slaves[slave_id] = Slave(slave_id, unsigned, memory)
                 return self._slaves[slave_id]
             else:
                 raise DuplicatedKeyError("Slave {0} already exists".format(slave_id))
@@ -853,9 +863,9 @@ class Server(object):
         """returns the databank"""
         return self._databank
 
-    def add_slave(self, slave_id, unsigned=True):
+    def add_slave(self, slave_id, unsigned=True, memory=None):
         """add slave to the server"""
-        return self._databank.add_slave(slave_id, unsigned)
+        return self._databank.add_slave(slave_id, unsigned, memory)
 
     def get_slave(self, slave_id):
         """get the slave with the given id"""

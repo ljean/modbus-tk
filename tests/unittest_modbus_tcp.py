@@ -19,6 +19,7 @@ import sys
 
 LOGGER = modbus_tk.utils.create_logger()
 
+
 class TestMbap(unittest.TestCase):
     """Test the TcpMbap class"""
     def setUp(self):
@@ -197,7 +198,14 @@ class TestTcpQuery(unittest.TestCase):
         query = modbus_tcp.TcpQuery()
         pdu = "a"
         request = query.build_request(pdu, 0)
-        response = struct.pack(">HHHB"+str(len(pdu))+"s", query._request_mbap.transaction_id, query._request_mbap.protocol_id, len(pdu)+1, query._request_mbap.unit_id+1, pdu)
+        response = struct.pack(
+            ">HHHB"+str(len(pdu))+"s",
+            query._request_mbap.transaction_id,
+            query._request_mbap.protocol_id,
+            len(pdu)+1,
+            query._request_mbap.unit_id+1,
+            pdu
+        )
         self.assertRaises(modbus_tk.modbus_tcp.ModbusInvalidMbapError, query.parse_response, response)
 
     def testParseWrongTransactionResponse(self):
@@ -205,7 +213,14 @@ class TestTcpQuery(unittest.TestCase):
         query = modbus_tcp.TcpQuery()
         pdu = "a"
         request = query.build_request(pdu, 0)
-        response = struct.pack(">HHHB"+str(len(pdu))+"s", query._request_mbap.transaction_id+1, query._request_mbap.protocol_id, len(pdu)+1, query._request_mbap.unit_id, pdu)
+        response = struct.pack(
+            ">HHHB"+str(len(pdu))+"s",
+            query._request_mbap.transaction_id+1,
+            query._request_mbap.protocol_id,
+            len(pdu)+1,
+            query._request_mbap.unit_id,
+            pdu
+        )
         self.assertRaises(modbus_tk.modbus_tcp.ModbusInvalidMbapError, query.parse_response, response)
     
     def testParseWrongProtocolIdResponse(self):
@@ -213,7 +228,14 @@ class TestTcpQuery(unittest.TestCase):
         query = modbus_tcp.TcpQuery()
         pdu = "a"
         request = query.build_request(pdu, 0)
-        response = struct.pack(">HHHB"+str(len(pdu))+"s", query._request_mbap.transaction_id, query._request_mbap.protocol_id+1, len(pdu)+1, query._request_mbap.unit_id, pdu)
+        response = struct.pack(
+            ">HHHB"+str(len(pdu))+"s",
+            query._request_mbap.transaction_id,
+            query._request_mbap.protocol_id+1,
+            len(pdu)+1,
+            query._request_mbap.unit_id,
+            pdu
+        )
         self.assertRaises(modbus_tk.modbus_tcp.ModbusInvalidMbapError, query.parse_response, response)
     
     def testParseWrongLengthResponse(self):
@@ -221,7 +243,14 @@ class TestTcpQuery(unittest.TestCase):
         query = modbus_tcp.TcpQuery()
         pdu = "a"
         request = query.build_request(pdu, 0)
-        response = struct.pack(">HHHB"+str(len(pdu))+"s", query._request_mbap.transaction_id, query._request_mbap.protocol_id+1, len(pdu), query._request_mbap.unit_id, pdu)
+        response = struct.pack(
+            ">HHHB"+str(len(pdu))+"s",
+            query._request_mbap.transaction_id,
+            query._request_mbap.protocol_id+1,
+            len(pdu),
+            query._request_mbap.unit_id,
+            pdu
+        )
         self.assertRaises(modbus_tk.modbus_tcp.ModbusInvalidMbapError, query.parse_response, response)
     
     def testParseWrongLengthResponse(self):
@@ -229,7 +258,14 @@ class TestTcpQuery(unittest.TestCase):
         query = modbus_tcp.TcpQuery()
         pdu = "a"
         request = query.build_request(pdu, 0)
-        response = struct.pack(">HHHB"+str(len(pdu))+"s", query._request_mbap.transaction_id, query._request_mbap.protocol_id+1, len(pdu), query._request_mbap.unit_id, pdu)
+        response = struct.pack(
+            ">HHHB"+str(len(pdu))+"s",
+            query._request_mbap.transaction_id,
+            query._request_mbap.protocol_id+1,
+            len(pdu),
+            query._request_mbap.unit_id,
+            pdu
+        )
         self.assertRaises(modbus_tk.modbus_tcp.ModbusInvalidMbapError, query.parse_response, response)
     
     def testParseTooShortRequest(self):
@@ -267,6 +303,7 @@ class TestTcpQuery(unittest.TestCase):
             response_pdu = query.parse_response(response)
             self.assertEqual(pdu, response_pdu)
             i += 1
+
 
 class TestTcpServer(unittest.TestCase):
     def setUp(self): pass

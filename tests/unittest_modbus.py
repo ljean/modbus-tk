@@ -20,6 +20,7 @@ from modbus_tk.hooks import install_hook
 
 LOGGER = modbus_tk.utils.create_logger("udp")
 
+
 class TestSlaveRequestHandler(unittest.TestCase):
     def setUp(self):
         self._slave = modbus_tk.modbus.Slave(0)
@@ -40,18 +41,21 @@ class TestSlaveRequestHandler(unittest.TestCase):
         list_of_coils = ((1, 0, 2, 1), (0, ), (1, ), [0, 1]*20, [1]*128, [1, 0, 1]*7, (1, 0, 0, 1), [1, 0]*20)
         starting_addresses = (0, 0, 127, 40, 0, 0, 124, 87)
         
-        list_of_responses = (struct.pack(">BBB", function, 1, 13),
-                             struct.pack(">BBB", function, 1, 0),
-                             struct.pack(">BBB", function, 1, 1),
-                             struct.pack(">BBBBBBB", function, 5, 170, 170, 170, 170, 170),
-                             struct.pack(">BB", function, 16)+(struct.pack(">B", 255)*16),
-                             struct.pack(">BBBBB", function, 3, 109, 219, 22),
-                             struct.pack(">BBB", function, 1, 9),
-                             struct.pack(">BBBBBBB", function, 5, 85, 85, 85, 85, 85),
-                             )
+        list_of_responses = (
+            struct.pack(">BBB", function, 1, 13),
+            struct.pack(">BBB", function, 1, 0),
+            struct.pack(">BBB", function, 1, 1),
+            struct.pack(">BBBBBBB", function, 5, 170, 170, 170, 170, 170),
+            struct.pack(">BB", function, 16)+(struct.pack(">B", 255)*16),
+            struct.pack(">BBBBB", function, 3, 109, 219, 22),
+            struct.pack(">BBB", function, 1, 9),
+            struct.pack(">BBBBBBB", function, 5, 85, 85, 85, 85, 85),
+        )
         for i in xrange(len(list_of_coils)):
             self._slave.set_values(self._name, starting_addresses[i], list_of_coils[i])
-            self.assertEqual(list_of_responses[i], self._slave.handle_request(struct.pack(">BHH", function, starting_addresses[i], len(list_of_coils[i]))))
+            self.assertEqual(list_of_responses[i], self._slave.handle_request(
+                struct.pack(">BHH", function, starting_addresses[i], len(list_of_coils[i])))
+            )
 
     def _read_out_of_blocks(self, function, block_type):
         self._slave.add_block(self._name, block_type, 20, 80)
@@ -87,15 +91,24 @@ class TestSlaveRequestHandler(unittest.TestCase):
         self._read_out_of_blocks(modbus_tk.defines.READ_COILS, modbus_tk.defines.COILS)
 
     def testHandleReadDiscreteInputsOutOfBlocks(self):
-        """test that an error response pdu is sent when receiving a pdu for reading discrete inputs at an unknown addresses"""
+        """
+        test that an error response pdu is sent when receiving a pdu
+        for reading discrete inputs at an unknown addresses
+        """
         self._read_out_of_blocks(modbus_tk.defines.READ_DISCRETE_INPUTS, modbus_tk.defines.DISCRETE_INPUTS)
 
     def testHandleReadCoilsOnContinuousBlocks(self):
-        """test that an error response pdu is sent when receiving a pdu for reading coils at an address shared on distinct blocks"""
+        """
+        test that an error response pdu is sent when receiving a pdu
+        for reading coils at an address shared on distinct blocks
+        """
         self._read_continuous_blocks(modbus_tk.defines.READ_COILS, modbus_tk.defines.COILS)
 
     def testHandleReadDiscreteInputsOnContinuousBlocks(self):
-        """test that an error response pdu is sent when receiving a pdu for reading discrete inputs at an address shared on distinct blocks"""
+        """
+        test that an error response pdu is sent when receiving a pdu
+        for reading discrete inputs at an address shared on distinct blocks
+        """
         self._read_continuous_blocks(modbus_tk.defines.READ_DISCRETE_INPUTS, modbus_tk.defines.DISCRETE_INPUTS)
 
     def _make_response(self, function, regs):
@@ -111,7 +124,10 @@ class TestSlaveRequestHandler(unittest.TestCase):
 
         for i in xrange(len(list_of_regs)):
             self._slave.set_values(self._name, starting_addresses[i], list_of_regs[i])
-            self.assertEqual(self._make_response(function, list_of_regs[i]), self._slave.handle_request(struct.pack(">BHH", function, starting_addresses[i], len(list_of_regs[i]))))
+            self.assertEqual(
+                self._make_response(function, list_of_regs[i]),
+                self._slave.handle_request(struct.pack(">BHH", function, starting_addresses[i], len(list_of_regs[i])))
+            )
 
     def testHandleReadHoldingRegisters(self):
         """test that the correct response pdu is sent when receiving a pdu for reading holding registers"""
@@ -144,11 +160,17 @@ class TestSlaveRequestHandler(unittest.TestCase):
         self._read_out_of_blocks(modbus_tk.defines.READ_INPUT_REGISTERS, modbus_tk.defines.ANALOG_INPUTS)
 
     def testHandleReadHoldingRegistersOnContinuousBlocks(self):
-        """test that an error response pdu is sent when receiving a pdu for reading coils at an address shared on distinct blocks"""
+        """
+        test that an error response pdu is sent when receiving a pdu
+        for reading coils at an address shared on distinct blocks
+        """
         self._read_continuous_blocks(modbus_tk.defines.READ_HOLDING_REGISTERS, modbus_tk.defines.HOLDING_REGISTERS)
 
     def testHandleReadInputregistersOnContinuousBlocks(self):
-        """test that an error response pdu is sent when receiving a pdu for reading discrete inputs at an address shared on distinct blocks"""
+        """
+        test that an error response pdu is sent when receiving a pdu
+        for reading discrete inputs at an address shared on distinct blocks
+        """
         self._read_continuous_blocks(modbus_tk.defines.READ_INPUT_REGISTERS, modbus_tk.defines.ANALOG_INPUTS)
 
 
@@ -156,12 +178,33 @@ class TestSlaveBlocks(unittest.TestCase):
     def setUp(self):
         self._slave = modbus_tk.modbus.Slave(0)
         self._name = "toto"
-        self._block_types = (modbus_tk.defines.COILS, modbus_tk.defines.DISCRETE_INPUTS,
-                             modbus_tk.defines.HOLDING_REGISTERS, modbus_tk.defines.ANALOG_INPUTS)
+        self._block_types = (
+            modbus_tk.defines.COILS,
+            modbus_tk.defines.DISCRETE_INPUTS,
+            modbus_tk.defines.HOLDING_REGISTERS,
+            modbus_tk.defines.ANALOG_INPUTS,
+        )
     
     def tearDown(self):
         pass
-    
+
+    def testShareData(self):
+        """Add a block with shared memory"""
+        shared_list = []
+        memory = {
+            modbus_tk.defines.COILS: shared_list,
+            modbus_tk.defines.DISCRETE_INPUTS: shared_list,
+            modbus_tk.defines.HOLDING_REGISTERS: shared_list,
+            modbus_tk.defines.ANALOG_INPUTS: shared_list,
+        }
+
+        slave = modbus_tk.modbus.Slave(0, True, memory)
+        slave.add_block(self._name, modbus_tk.defines.COILS, 0, 100)
+        self.assert_(slave._get_block(self._name))
+        self.assertEqual(slave.get_values(self._name, 10, 1), (0, ))
+        slave.set_values(self._name, 10, 2)
+        self.assertEqual(slave.get_values(self._name, 10, 1), (2, ))
+
     def testAddBlock(self):
         """Add a block and check that it is added"""
         self._slave.add_block(self._name, modbus_tk.defines.COILS, 0, 100)
@@ -227,7 +270,9 @@ class TestSlaveBlocks(unittest.TestCase):
         for i in self._block_types:
             self._slave.add_block(self._name, i, 0, 100)
             for j in xrange(100):
-                self.assertRaises(modbus_tk.modbus.OverlapModbusBlockError, self._slave.add_block, self._name+"_", i, j, 100)
+                self.assertRaises(
+                    modbus_tk.modbus.OverlapModbusBlockError, self._slave.add_block, self._name+"_", i, j, 100
+                )
             self._slave.remove_block(self._name)
             
     def testAddContinuousBlock(self):
@@ -400,9 +445,15 @@ class TestServer(unittest.TestCase):
             setblock_hook.calls += 1
         setblock_hook.calls = 0
         install_hook('modbus.ModbusBlock.setitem', setblock_hook)
+
+        block_types = (
+            modbus_tk.defines.COILS,
+            modbus_tk.defines.DISCRETE_INPUTS,
+            modbus_tk.defines.HOLDING_REGISTERS,
+            modbus_tk.defines.ANALOG_INPUTS
+        )
         
-        for block_type in (modbus_tk.defines.COILS, modbus_tk.defines.DISCRETE_INPUTS,
-                           modbus_tk.defines.HOLDING_REGISTERS, modbus_tk.defines.ANALOG_INPUTS):
+        for block_type in block_types:
             slave.add_block(str(block_type), block_type, 0, 20)
             slave.set_values(str(block_type), 0, 1)
             slave.set_values(str(block_type), 5, (1, 0, 1))
@@ -410,4 +461,4 @@ class TestServer(unittest.TestCase):
         self.assertEquals(setblock_hook.calls, 8)
         
 if __name__ == '__main__':
-    unittest.main(argv = sys.argv)
+    unittest.main(argv=sys.argv)

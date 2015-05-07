@@ -15,6 +15,7 @@ import socket
 import select
 from modbus_tk import LOGGER
 
+
 def threadsafe_function(fcn):
     """decorator making sure that the decorated function is thread safe"""
     lock = threading.RLock()

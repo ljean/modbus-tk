@@ -21,6 +21,7 @@ import sys
 
 LOGGER = modbus_tk.utils.create_logger("udp")
 
+
 class TestQueriesSetupAndTeardown:
     """This is not a test case, but can be used by Rtu and Tcp test cases"""
     
@@ -362,8 +363,10 @@ class TestQueries(TestQueriesSetupAndTeardown):
         
     def testBroadcastReading(self):
         """Check that broadcast queries are handled correctly"""
-        functions = (modbus_tk.defines.READ_HOLDING_REGISTERS, modbus_tk.defines.READ_COILS,
-                    modbus_tk.defines.READ_INPUT_REGISTERS, modbus_tk.defines.READ_DISCRETE_INPUTS)
+        functions = (
+            modbus_tk.defines.READ_HOLDING_REGISTERS, modbus_tk.defines.READ_COILS,
+            modbus_tk.defines.READ_INPUT_REGISTERS, modbus_tk.defines.READ_DISCRETE_INPUTS
+        )
         for fct in functions:
             self.assertEqual(None, self.master.execute(0, fct, 0, 5))
             
@@ -377,3 +380,43 @@ class TestQueries(TestQueriesSetupAndTeardown):
             expected_response = struct.pack(">BB", rc, modbus_tk.defines.SLAVE_DEVICE_FAILURE) 
             self.assertEquals(expected_response, response)
 
+
+class SharedDataTest:
+    """This is not a test case, but can be used by Rtu and Tcp test cases"""
+    master = None
+    server = None
+    slave1 = None
+
+    def setUp(self):
+        self.master = self._get_master()
+        self.server = self._get_server()
+
+        shared_list = []
+
+        memory = {
+            modbus_tk.defines.COILS: shared_list,
+            modbus_tk.defines.DISCRETE_INPUTS: shared_list,
+            modbus_tk.defines.HOLDING_REGISTERS: shared_list,
+            modbus_tk.defines.ANALOG_INPUTS: shared_list,
+        }
+
+        self.slave1 = self.server.add_slave(1, True, memory)
+        self.slave1.add_block("shared", modbus_tk.defines.HOLDING_REGISTERS, 0, 100)
+
+        self.server.start()
+        time.sleep(0.1)
+        self.master.set_timeout(1.0)
+        self.master.open()
+
+    def tearDown(self):
+        self.master.close()
+        self.server.stop()
+
+    def testWriteRegistersReadCoils(self):
+        """Write the values of a multiple registers and check that it is correctly written"""
+        result = self.master.execute(1, modbus_tk.defines.WRITE_MULTIPLE_REGISTERS, 0, output_value=range(20))
+        self.assertEqual((0, 20), result)
+        self.assertEqual(tuple(range(20)), self.slave1.get_values("shared", 0, 20))
+
+        result = self.master.execute(1, modbus_tk.defines.READ_INPUT_REGISTERS, 0, 20)
+        self.assertEqual(tuple(range(20)), result)

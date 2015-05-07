@@ -9,22 +9,23 @@
  This is distributed under GNU LGPL license, see license.txt
 """
 
-import unittest
-import modbus_tk
-import modbus_tk.modbus_rtu as modbus_rtu
-import modbus_tk.hooks as hooks
-import threading
-import struct
-import logging
-import modbus_tk.utils as utils
+import os
 import time
-import sys
 import serial
-from functest_modbus import TestQueries, TestQueriesSetupAndTeardown
+import struct
+import sys
+import threading
+import unittest
+import Queue
+
+import modbus_tk
+from modbus_tk import modbus_rtu, hooks, utils
+
+from functest_modbus import TestQueries, TestQueriesSetupAndTeardown, SharedDataTest
+
 
 LOGGER = modbus_tk.utils.create_logger("udp")
 
-import os
 if os.name == "nt":
     SERVER_PORT = "COM1"
     MASTER_PORT = "COM2"
@@ -33,6 +34,7 @@ elif os.name == "posix":
     MASTER_PORT = "/dev/ttyS1"
 else:
     raise Exception("The %d os is not supported yet" % (os.name))
+
 
 class TestConnection(TestQueriesSetupAndTeardown, unittest.TestCase):
     def _get_server(self):
@@ -96,7 +98,6 @@ class TestConnection(TestQueriesSetupAndTeardown, unittest.TestCase):
             result = self.master.execute(1, modbus_tk.defines.READ_HOLDING_REGISTERS, 500, 100)
             self.assertEqual(tuple(range(100)), result)
     
-        
 
 class TestRtuSpecific(TestQueriesSetupAndTeardown, unittest.TestCase):
     def _get_server(self):
@@ -169,11 +170,8 @@ class TestRtuSpecific(TestQueriesSetupAndTeardown, unittest.TestCase):
     def testMultiThreadAccess(self):
         """check that the modbus call are thread safe"""
 
-        slaves = []
-        slaves.append(self.server.add_slave(11))
-        slaves.append(self.server.add_slave(12))
-        import Queue
-        
+        slaves = [self.server.add_slave(11), self.server.add_slave(12)]
+
         q = Queue.Queue()
 
         for s in slaves:
@@ -193,9 +191,11 @@ class TestRtuSpecific(TestQueriesSetupAndTeardown, unittest.TestCase):
                 q.put(1)
         
         threads = [threading.Thread(target=set_val, args=(self, slaves, q)) for i in xrange(3)]
-        for t in threads: t.start()
+        for t in threads:
+            t.start()
         LOGGER.debug("all threads have been started")
-        for t in threads: t.join()
+        for t in threads:
+            t.join()
         LOGGER.debug("all threads have done")
         self.assert_(q.empty())
 
@@ -212,7 +212,23 @@ class RtuTestQueries(TestQueries, unittest.TestCase):
         port = serial.Serial(port=MASTER_PORT, baudrate=9600, bytesize=8, parity='N', stopbits=1, xonxoff=0)
         master = modbus_rtu.RtuMaster(port)
         #master.set_verbose(True)
-        return master        
+        return master
+
+
+class RtuSharedDataTest(SharedDataTest, unittest.TestCase):
+
+    def _get_server(self):
+        port = serial.Serial(port=SERVER_PORT, baudrate=9600, bytesize=8, parity='N', stopbits=1, xonxoff=0)
+        server = modbus_rtu.RtuServer(port)
+        #server.set_verbose(True)
+        return server
+
+    def _get_master(self):
+        port = serial.Serial(port=MASTER_PORT, baudrate=9600, bytesize=8, parity='N', stopbits=1, xonxoff=0)
+        master = modbus_rtu.RtuMaster(port)
+        #master.set_verbose(True)
+        return master
+
                        
 if __name__ == '__main__':
-    unittest.main(argv = sys.argv)
+    unittest.main(argv=sys.argv)
