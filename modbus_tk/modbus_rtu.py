@@ -159,7 +159,7 @@ class RtuServer(Server):
         interframe_multiplier = kwargs.pop('interframe_multiplier', 3.5)
         interchar_multiplier = kwargs.pop('interchar_multiplier', 1.5)
 
-        super(RtuServer, self).__init__(self, databank if databank else Databank())
+        super(RtuServer, self).__init__(databank if databank else Databank())
 
         self._serial = serial
         LOGGER.info("RtuServer %s is %s", self._serial.portstr, "opened" if self._serial.isOpen() else "closed")
