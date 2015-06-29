@@ -36,7 +36,7 @@ setup(
     author_email='luc.jean@gmail.com',
     maintainer='Luc Jean',
     maintainer_email='luc.jean@gmail.com',
-    url='http://code.google.com/p/modbus-tk/',
+    url='https://github.com/ljean/modbus-tk/',
     license='LGPL',
     packages=['modbus_tk'],
     platforms=["Linux", "Mac OS X", "Win"],
