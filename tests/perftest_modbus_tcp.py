@@ -72,7 +72,7 @@ class TestStress(unittest.TestCase):
         
         def read_vals(master):
             try:
-                for i in xrange(100):
+                for i in range(100):
                     result = master.execute(1, modbus_tk.defines.READ_HOLDING_REGISTERS, 0, 100)
                     if result != tuple(range(100)):
                         q.put(1)

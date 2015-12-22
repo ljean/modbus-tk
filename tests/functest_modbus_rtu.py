@@ -76,7 +76,7 @@ class TestConnection(TestQueriesSetupAndTeardown, unittest.TestCase):
         slave.add_block("myblock", modbus_tk.defines.HOLDING_REGISTERS, 500, 100)
         slave.set_values("myblock", 500, range(100))
         
-        for x in xrange(5):
+        for x in range(5):
             self.master.close()
             time.sleep(1.0)
             self.master.open()
@@ -90,7 +90,7 @@ class TestConnection(TestQueriesSetupAndTeardown, unittest.TestCase):
         slave.add_block("myblock", modbus_tk.defines.HOLDING_REGISTERS, 500, 100)
         slave.set_values("myblock", 500, range(100))
         
-        for x in xrange(5):
+        for x in range(5):
             self.server.stop()
             time.sleep(1.0)
             self.server.start()
@@ -180,7 +180,7 @@ class TestRtuSpecific(TestQueriesSetupAndTeardown, unittest.TestCase):
         def set_val(self_, slaves, q):
             try:
                 id = 11
-                for i in xrange(5):
+                for i in range(5):
                     for s in slaves:
                         s.set_values("a", 0, [i]*100)
                         result = self_.master.execute(id, modbus_tk.defines.READ_HOLDING_REGISTERS, 0, 100)
@@ -190,7 +190,7 @@ class TestRtuSpecific(TestQueriesSetupAndTeardown, unittest.TestCase):
                 LOGGER.error(msg)
                 q.put(1)
         
-        threads = [threading.Thread(target=set_val, args=(self, slaves, q)) for i in xrange(3)]
+        threads = [threading.Thread(target=set_val, args=(self, slaves, q)) for i in range(3)]
         for t in threads:
             t.start()
         LOGGER.debug("all threads have been started")

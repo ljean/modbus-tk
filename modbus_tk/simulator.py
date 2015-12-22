@@ -11,6 +11,7 @@
  The modbus_tk simulator is a console application which is running a server with TCP and RTU communication
  It is possible to interact with the server from the command line or from a RPC (Remote Process Call)
 """
+from __future__ import print_function
 
 import ctypes
 import os
@@ -348,7 +349,7 @@ class Simulator(object):
 def print_me(args):
     """hook function example"""
     request = args[1]
-    print "print_me: len = ", len(request)
+    print("print_me: len = ", len(request))
 
 
 def run_simulator():
@@ -362,7 +363,7 @@ def run_simulator():
         simulator.start()
 
     except Exception as exception:
-        print exception
+        print(exception)
 
     finally:
         simulator.close()

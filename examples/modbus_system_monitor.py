@@ -41,7 +41,7 @@ class SystemDataCollector(object):
                 from win32com.client import GetObject
                 wmi = GetObject('winmgmts:')
                 cpu = wmi.InstancesOf('Win32_Processor')
-                for (_cpu, i) in zip(cpu, xrange(10)):
+                for (_cpu, i) in zip(cpu, range(10)):
                     value = _cpu.Properties_('LoadPercentage').Value
                     cpu_usage = int(str(value)) if value else 0
 

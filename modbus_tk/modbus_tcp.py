@@ -19,7 +19,7 @@ from modbus_tk.modbus import (
     Databank, Master, Query, Server,
     InvalidArgumentError, ModbusInvalidResponseError, ModbusInvalidRequestError
 )
-from modbus_tk.utils import threadsafe_function, flush_socket
+from modbus_tk.utils import threadsafe_function, flush_socket, to_data
 
 
 #-------------------------------------------------------------------------------
@@ -121,7 +121,7 @@ class TcpQuery(Query):
         self._request_mbap.transaction_id = self._get_transaction_id()
         self._request_mbap.unit_id = slave
         mbap = self._request_mbap.pack()
-        return mbap+pdu
+        return mbap + to_data(pdu)
 
     def parse_response(self, response):
         """Extract the pdu from the Modbus TCP response"""
@@ -149,7 +149,7 @@ class TcpQuery(Query):
         """Build the response"""
         self._response_mbap.clone(self._request_mbap)
         self._response_mbap.length = len(response_pdu) + 1
-        return self._response_mbap.pack() + response_pdu
+        return self._response_mbap.pack() + to_data(response_pdu)
 
 
 class TcpMaster(Master):
@@ -304,7 +304,7 @@ class TcpServer(Server):
 
                     # handle all other sockets
                     sock.settimeout(1.0)
-                    request = ""
+                    request = to_data("")
                     is_ok = True
 
                     #read the 7 bytes of the mbap

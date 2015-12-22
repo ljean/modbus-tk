@@ -11,6 +11,7 @@
 """
 
 import struct
+import six
 import time
 
 from modbus_tk import LOGGER
@@ -36,7 +37,7 @@ class RtuQuery(Query):
         self._request_address = slave
         if (self._request_address < 0) or (self._request_address > 255):
             raise InvalidArgumentError("Invalid address {0}".format(self._request_address))
-        data = struct.pack(">B", self._request_address) + pdu
+        data = struct.pack(">B", self._request_address) + utils.to_data(pdu)
         crc = struct.pack(">H", utils.calculate_crc(data))
         return data + crc
 
@@ -45,7 +46,11 @@ class RtuQuery(Query):
         if len(response) < 3:
             raise ModbusInvalidResponseError("Response length is invalid {0}".format(len(response)))
 
-        (self._response_address, ) = struct.unpack(">B", response[0])
+        if six.PY2:
+            (self._response_address, ) = struct.unpack(">B", response[0:1])
+        else:
+            self._response_address = response[0]
+
         if self._request_address != self._response_address:
             raise ModbusInvalidResponseError(
                 "Response address {0} is different from request address {1}".format(
@@ -65,7 +70,7 @@ class RtuQuery(Query):
         if len(request) < 3:
             raise ModbusInvalidRequestError("Request length is invalid {0}".format(len(request)))
 
-        (self._request_address, ) = struct.unpack(">B", request[0])
+        (self._request_address, ) = struct.unpack(">B", request[0:1])
 
         (crc, ) = struct.unpack(">H", request[-2:])
         if crc != utils.calculate_crc(request[:-2]):
@@ -76,7 +81,7 @@ class RtuQuery(Query):
     def build_response(self, response_pdu):
         """Build the response"""
         self._response_address = self._request_address
-        data = struct.pack(">B", self._response_address) + response_pdu
+        data = struct.pack(">B", self._response_address) + utils.to_data(response_pdu)
         crc = struct.pack(">H", utils.calculate_crc(data))
         return data + crc
 

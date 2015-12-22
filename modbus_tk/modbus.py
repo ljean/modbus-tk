@@ -155,7 +155,7 @@ class Master(object):
         if function_code == defines.READ_COILS or function_code == defines.READ_DISCRETE_INPUTS:
             is_read_function = True
             pdu = struct.pack(">BHH", function_code, starting_address, quantity_of_x)
-            byte_count = quantity_of_x / 8
+            byte_count = quantity_of_x // 8
             if (quantity_of_x % 8) > 0:
                 byte_count += 1
             nb_of_digits = quantity_of_x
@@ -190,7 +190,7 @@ class Master(object):
                 expected_length = 8
 
         elif function_code == defines.WRITE_MULTIPLE_COILS:
-            byte_count = len(output_value) / 8
+            byte_count = len(output_value) // 8
             if (len(output_value) % 8) > 0:
                 byte_count += 1
             pdu = struct.pack(">BHHB", function_code, starting_address, len(output_value), byte_count)
@@ -322,7 +322,7 @@ class Master(object):
                 if nb_of_digits > 0:
                     digits = []
                     for byte_val in result:
-                        for i in xrange(8):
+                        for i in range(8):
                             if len(digits) >= nb_of_digits:
                                 break
                             digits.append(byte_val % 2)
@@ -432,7 +432,7 @@ class Slave(object):
         values = block[offset:offset+quantity_of_x]
 
         #pack bits in bytes
-        byte_count = quantity_of_x / 8
+        byte_count = quantity_of_x // 8
         if (quantity_of_x % 8) > 0:
             byte_count += 1
 
@@ -514,7 +514,7 @@ class Slave(object):
         block, offset = self._get_block_and_offset(defines.HOLDING_REGISTERS, starting_address, quantity_of_x)
 
         count = 0
-        for i in xrange(quantity_of_x):
+        for i in range(quantity_of_x):
             count += 1
             fmt = "H" if self.unsigned else "h"
             block[offset+i] = struct.unpack(">"+fmt, request_pdu[6+2*i:8+2*i])[0]
@@ -527,7 +527,7 @@ class Slave(object):
         # get the starting address and the number of items from the request pdu
         (starting_address, quantity_of_x, byte_count) = struct.unpack(">HHB", request_pdu[1:6])
 
-        expected_byte_count = quantity_of_x / 8
+        expected_byte_count = quantity_of_x // 8
         if (quantity_of_x % 8) > 0:
             expected_byte_count += 1
 
@@ -539,12 +539,12 @@ class Slave(object):
         block, offset = self._get_block_and_offset(defines.COILS, starting_address, quantity_of_x)
 
         count = 0
-        for i in xrange(byte_count):
+        for i in range(byte_count):
             if count >= quantity_of_x:
                 break
             fmt = "B" if self.unsigned else "b"
             (byte_value, ) = struct.unpack(">"+fmt, request_pdu[6+i])
-            for j in xrange(8):
+            for j in range(8):
                 if count >= quantity_of_x:
                     break
 
@@ -596,7 +596,7 @@ class Slave(object):
                     return retval
 
                 # get the function code
-                (function_code, ) = struct.unpack(">B", request_pdu[0])
+                (function_code, ) = struct.unpack(">B", request_pdu[0:1])
 
                 # check if the function code is valid. If not returns error response
                 if function_code not in self._fn_code_map:
@@ -623,7 +623,7 @@ class Slave(object):
                         return struct.pack(">B", function_code) + response_pdu
                 raise Exception("No response for function %d" % function_code)
 
-            except ModbusError, excpt:
+            except ModbusError as excpt:
                 LOGGER.debug(str(excpt))
                 call_hooks("modbus.Slave.on_exception", (self, function_code, excpt))
                 return struct.pack(">BB", function_code+128, excpt.get_exception_code())
@@ -648,7 +648,7 @@ class Slave(object):
             # it means that only 1 block per type must correspond to a given address
             # for example: it must not have 2 holding registers at address 100
             index = 0
-            for i in xrange(len(self._memory[block_type])):
+            for i in range(len(self._memory[block_type])):
                 block = self._memory[block_type][i]
                 if block.is_in(starting_address, size):
                     raise OverlapModbusBlockError(
@@ -812,7 +812,7 @@ class Databank(object):
                 #make the full response
                 response = query.build_response(response_pdu)
                 return response
-        except Exception, excpt:
+        except Exception as excpt:
             call_hooks("modbus.Databank.on_error", (self, excpt, request_pdu))
             LOGGER.error("handle request failed: " + str(excpt))
 
@@ -905,7 +905,7 @@ class Server(object):
                 self._do_run()
             LOGGER.info("%s has stopped", self.__class__)
             self._do_exit()
-        except Exception, excpt:
+        except Exception as excpt:
             LOGGER.error("server error: %s", str(excpt))
         #make possible to rerun in future
         self._make_thread()

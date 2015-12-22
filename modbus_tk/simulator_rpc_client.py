@@ -8,6 +8,7 @@
 
  This is distributed under GNU LGPL license, see license.txt
 """
+from __future__ import print_function
 
 import socket
 import modbus_tk.defines
@@ -104,23 +105,23 @@ class SimulatorRpcClient(object):
 if __name__ == "__main__":
     modbus_simu = SimulatorRpcClient()
     modbus_simu.remove_all_slaves()
-    print modbus_simu.add_slave(12)
-    print modbus_simu.add_block(12, "toto", modbus_tk.defines.COILS, 0, 100)
-    print modbus_simu.set_values(12, "toto", 0, [5, 8, 7, 6, 41])
-    print modbus_simu.get_values(12, "toto", 0, 5)
-    print modbus_simu.set_values(12, "toto", 2, [9])
-    print modbus_simu.get_values(12, "toto", 0, 5)
-    print modbus_simu.has_slave(12)
-    print modbus_simu.add_block(12, "titi", modbus_tk.defines.COILS, 100, 100)
-    print modbus_simu.remove_block(12, "titi")
-    print modbus_simu.add_slave(25)
-    print modbus_simu.has_slave(25)
-    print modbus_simu.add_slave(28)
+    print(modbus_simu.add_slave(12))
+    print(modbus_simu.add_block(12, "toto", modbus_tk.defines.COILS, 0, 100))
+    print(modbus_simu.set_values(12, "toto", 0, [5, 8, 7, 6, 41]))
+    print(modbus_simu.get_values(12, "toto", 0, 5))
+    print(modbus_simu.set_values(12, "toto", 2, [9]))
+    print(modbus_simu.get_values(12, "toto", 0, 5))
+    print(modbus_simu.has_slave(12))
+    print(modbus_simu.add_block(12, "titi", modbus_tk.defines.COILS, 100, 100))
+    print(modbus_simu.remove_block(12, "titi"))
+    print(modbus_simu.add_slave(25))
+    print(modbus_simu.has_slave(25))
+    print(modbus_simu.add_slave(28))
     modbus_simu.remove_slave(25)
-    print modbus_simu.has_slave(25)
-    print modbus_simu.has_slave(28)
+    print(modbus_simu.has_slave(25))
+    print(modbus_simu.has_slave(28))
     modbus_simu.remove_all_blocks(12)
     modbus_simu.remove_all_slaves()
-    print modbus_simu.has_slave(28)
-    print modbus_simu.has_slave(12)
+    print(modbus_simu.has_slave(28))
+    print(modbus_simu.has_slave(12))
     modbus_simu.install_hook("modbus.Server.before_handle_request", "print_me")

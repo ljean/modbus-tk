@@ -8,11 +8,13 @@
 
  This is distributed under GNU LGPL license, see license.txt
 """
+from __future__ import print_function
 
 import threading
 import logging
 import socket
 import select
+import six
 from modbus_tk import LOGGER
 
 
@@ -25,7 +27,7 @@ def threadsafe_function(fcn):
         lock.acquire()
         try:
             ret = fcn(*args, **kwargs)
-        except Exception, excpt:
+        except Exception as excpt:
             raise excpt
         finally:
             lock.release()
@@ -54,7 +56,7 @@ def get_log_buffer(prefix, buff):
     """Format binary data into a string for debug purpose"""
     log = prefix
     for i in buff:
-        log += str(ord(i)) + "-"
+        log += str(ord(i) if six.PY2 else i) + "-"
     return log[:-1]
 
 
@@ -67,7 +69,7 @@ class ConsoleHandler(logging.Handler):
 
     def emit(self, record):
         """format and print the record on the console"""
-        print self.format(record)
+        print(self.format(record))
 
 
 class LogitHandler(logging.Handler):
@@ -81,7 +83,10 @@ class LogitHandler(logging.Handler):
 
     def emit(self, record):
         """format and send the record over udp"""
-        self._sock.sendto(self.format(record)+"\r\n", self._dest)
+        data = self.format(record) + "\r\n"
+        if six.PY3:
+            data = to_data(data)
+        self._sock.sendto(data, self._dest)
 
 
 class DummyHandler(logging.Handler):
@@ -128,8 +133,11 @@ def calculate_crc(data):
     """Calculate the CRC16 of a datagram"""
     crc = 0xFFFF
     for i in data:
-        crc = crc ^ ord(i)
-        for j in xrange(8):
+        if six.PY2:
+            crc = crc ^ ord(i)
+        else:
+            crc = crc ^ i
+        for j in range(8):
             tmp = crc & 1
             crc = crc >> 1
             if tmp:
@@ -176,8 +184,15 @@ class WorkerThread(object):
                 self._fcts[0](*self._args)
             while self._go.isSet():
                 self._fcts[1](*self._args)
-        except Exception, excpt:
+        except Exception as excpt:
             LOGGER.error("error: %s", str(excpt))
         finally:
             if self._fcts[2]:
                 self._fcts[2](*self._args)
+
+
+def to_data(string_data):
+    if six.PY2:
+        return string_data
+    else:
+        return bytearray(string_data, 'ascii')

@@ -70,7 +70,7 @@ class TestQueries(TestQueriesSetupAndTeardown):
         """check that an error is raised where reading on 2 consecutive blocks"""
         try:
             self.master.execute(1, modbus_tk.defines.READ_HOLDING_REGISTERS, 50, 100)
-        except modbus_tk.modbus.ModbusError, ex:
+        except modbus_tk.modbus.ModbusError as ex:
             self.assertEqual(ex.get_exception_code(), 2)
             return
         self.assert_(False)
@@ -101,7 +101,7 @@ class TestQueries(TestQueriesSetupAndTeardown):
         
         try:
             self.master.execute(1, modbus_tk.defines.READ_HOLDING_REGISTERS, 300, 10)
-        except modbus_tk.modbus.ModbusError, ex:
+        except modbus_tk.modbus.ModbusError as ex:
             self.assertEqual(ex.get_exception_code(), 2)
             return
         self.assert_(False)
@@ -110,7 +110,7 @@ class TestQueries(TestQueriesSetupAndTeardown):
         """check than an error is raised when reading too many holding registers"""
         try:
             self.master.execute(1, modbus_tk.defines.READ_HOLDING_REGISTERS, 1000, 126)
-        except modbus_tk.modbus.ModbusError, ex:
+        except modbus_tk.modbus.ModbusError as ex:
             self.assertEqual(ex.get_exception_code(), 3)
             return
         self.assert_(False)
@@ -163,7 +163,7 @@ class TestQueries(TestQueriesSetupAndTeardown):
         """Test that an error is raised when reading an invalid address"""
         try:
             self.master.execute(1, modbus_tk.defines.READ_COILS, 500, 12)
-        except modbus_tk.modbus.ModbusError, ex:
+        except modbus_tk.modbus.ModbusError as ex:
             self.assertEqual(ex.get_exception_code(), 2)
             return
         self.assert_(False)
@@ -172,7 +172,7 @@ class TestQueries(TestQueriesSetupAndTeardown):
         """Test that an error is raised when too many coils are read"""
         try:
             self.master.execute(1, modbus_tk.defines.READ_COILS, 1000, 2001)
-        except modbus_tk.modbus.ModbusError, ex:
+        except modbus_tk.modbus.ModbusError as ex:
             self.assertEqual(ex.get_exception_code(), 3)
             return
         self.assert_(False)
@@ -218,7 +218,7 @@ class TestQueries(TestQueriesSetupAndTeardown):
         """Check taht an error is raised when writing a register out of block"""
         try:
             self.master.execute(1, modbus_tk.defines.WRITE_SINGLE_REGISTER, 500, output_value=11)
-        except modbus_tk.modbus.ModbusError, ex:
+        except modbus_tk.modbus.ModbusError as ex:
             self.assertEqual(ex.get_exception_code(), 2)
             return
         self.assert_(False)
@@ -241,7 +241,7 @@ class TestQueries(TestQueriesSetupAndTeardown):
         """Check taht an error is raised when writing a coil out of block"""
         try:
             self.master.execute(1, modbus_tk.defines.WRITE_SINGLE_COIL, 500, output_value=1)
-        except modbus_tk.modbus.ModbusError, ex:
+        except modbus_tk.modbus.ModbusError as ex:
             self.assertEqual(ex.get_exception_code(), modbus_tk.defines.ILLEGAL_DATA_ADDRESS)
             return
         self.assert_(False)
@@ -270,7 +270,7 @@ class TestQueries(TestQueriesSetupAndTeardown):
         """Check that an error is raised when writing a register out of block"""
         try:
             self.master.execute(1, modbus_tk.defines.WRITE_MULTIPLE_REGISTERS, 500, output_value=(11, 12))
-        except modbus_tk.modbus.ModbusError, ex:
+        except modbus_tk.modbus.ModbusError as ex:
             self.assertEqual(ex.get_exception_code(), modbus_tk.defines.ILLEGAL_DATA_ADDRESS)
             return
         self.assert_(False)
@@ -279,7 +279,7 @@ class TestQueries(TestQueriesSetupAndTeardown):
         """Check that an error is raised when writing too many registers"""
         try:
             self.master.execute(1, modbus_tk.defines.WRITE_MULTIPLE_REGISTERS, 1000, output_value=range(124))
-        except modbus_tk.modbus.ModbusError, ex:
+        except modbus_tk.modbus.ModbusError as ex:
             self.assertEqual(ex.get_exception_code(), modbus_tk.defines.ILLEGAL_DATA_VALUE)
             return
         self.assert_(False)
@@ -318,7 +318,7 @@ class TestQueries(TestQueriesSetupAndTeardown):
         """Check that an error is raised when writing a register out of block"""
         try:
             self.master.execute(1, modbus_tk.defines.WRITE_MULTIPLE_COILS, 500, output_value=(11, 12))
-        except modbus_tk.modbus.ModbusError, ex:
+        except modbus_tk.modbus.ModbusError as ex:
             self.assertEqual(ex.get_exception_code(), modbus_tk.defines.ILLEGAL_DATA_ADDRESS)
             return
         self.assert_(False)
@@ -327,7 +327,7 @@ class TestQueries(TestQueriesSetupAndTeardown):
         """Check that an error is raised when writing too many registers"""
         try:
             self.master.execute(1, modbus_tk.defines.WRITE_MULTIPLE_COILS, 1000, output_value=[1]*(int("7B0", 16)+1))
-        except modbus_tk.modbus.ModbusError, ex:
+        except modbus_tk.modbus.ModbusError as ex:
             self.assertEqual(ex.get_exception_code(), modbus_tk.defines.ILLEGAL_DATA_VALUE)
             return
         self.assert_(False)
