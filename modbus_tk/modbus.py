@@ -342,7 +342,7 @@ class Master(object):
 class ModbusBlock(object):
     """This class represents the values for a range of addresses"""
 
-    def __init__(self, starting_address, size):
+    def __init__(self, starting_address, size, name=''):
         """
         Contructor: defines the address range and creates the array of values
         """
@@ -661,7 +661,7 @@ class Slave(object):
             # if the block is ok: register it
             self._blocks[block_name] = (block_type, starting_address)
             # add it in the 'per type' shortcut
-            self._memory[block_type].insert(index, ModbusBlock(starting_address, size))
+            self._memory[block_type].insert(index, ModbusBlock(starting_address, size, block_name))
 
     def remove_block(self, block_name):
         """
