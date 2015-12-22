@@ -53,3 +53,5 @@ Company web site : <http://www.apidev.fr/>
 Other links
 ------------------------------------
 pymodslave http://sourceforge.net/projects/pymodslave/ : a gui app for simulation purpose built with Qt4 and modbus-tk
+
+modbus-simulator https://github.com/dhoomakethu/kivy-modbus-simu : modbus simulator built with modbus-tk and kivy
