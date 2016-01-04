@@ -18,10 +18,15 @@ import os
 import sys
 import select
 import serial
+import six
 import threading
 import time
-import Queue
-import SocketServer
+if six.PY2:
+    import Queue
+    import SocketServer
+else:
+    import queue as Queue
+    import socketserver as SocketServer
 
 import modbus_tk
 from modbus_tk import hooks
@@ -330,7 +335,7 @@ class Simulator(object):
             if cmd.find('quit') == 0:
                 self.outq.put('bye-bye\r\n')
                 break
-            elif self.cmds.has_key(args[0]):
+            elif args[0] in self.cmds:
                 try:
                     answer = self.cmds[args[0]](args)
                     self.outq.put("%s done: %s\r\n" % (args[0], answer))

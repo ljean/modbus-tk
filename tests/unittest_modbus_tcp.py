@@ -148,7 +148,7 @@ class TestTcpQuery(unittest.TestCase):
         queries = [modbus_tcp.TcpQuery() for i in range(100)]
         
         for i in range(len(queries)):
-            queries[i].build_request("", 0)
+            queries[i].build_request(to_data(""), 0)
         
         for i in range(len(queries)-1):
             self.assertEqual(queries[i]._request_mbap.transaction_id+1, queries[i+1]._request_mbap.transaction_id)
@@ -156,14 +156,14 @@ class TestTcpQuery(unittest.TestCase):
     def testBuildRequest(self):
         """Test the mbap returned by building a request"""
         query = modbus_tcp.TcpQuery()
-        request = query.build_request("", 0)
+        request = query.build_request(to_data(""), 0)
         self.assertEqual(struct.pack(">HHHB", query._request_mbap.transaction_id, 0, 1, 0), request)
         
     def testBuildRequestWithSlave(self):
         """Test the mbap returned by building a request with a slave"""
         query = modbus_tcp.TcpQuery()
         for i in range(0, 255):
-            request = query.build_request("", i)
+            request = query.build_request(to_data(""), i)
             self.assertEqual(
                 struct.pack(">HHHB", query._request_mbap.transaction_id, 0, 1, i),
                 request
@@ -179,7 +179,7 @@ class TestTcpQuery(unittest.TestCase):
         """Test the mbap returned by building a request with a pdu"""
         query = modbus_tcp.TcpQuery()
         for pdu in ["", "a", "a"*127, "abcdefghi"]:
-            request = query.build_request(pdu, 0)
+            request = query.build_request(to_data(pdu), 0)
             self.assertEqual(
                 struct.pack(
                     ">HHHB"+str(len(pdu))+"s", query._request_mbap.transaction_id, 0, len(pdu)+1, 0, to_data(pdu)
@@ -191,12 +191,12 @@ class TestTcpQuery(unittest.TestCase):
         """Test that Modbus TCP part of the response is understood"""
         query = modbus_tcp.TcpQuery()
         for pdu in ["", "a", "a"*127, "abcdefghi"]:
-            request = query.build_request("a", 0)
+            request = query.build_request(to_data(pdu), 0)
             response = struct.pack(
-                ">HHHB"+str(len(pdu))+"s",
+                ">HHHB" + str(len(pdu)) + "s",
                 query._request_mbap.transaction_id,
                 query._request_mbap.protocol_id,
-                len(pdu)+1,
+                len(pdu) + 1,
                 query._request_mbap.unit_id,
                 to_data(pdu)
             )
@@ -212,10 +212,10 @@ class TestTcpQuery(unittest.TestCase):
     def testParseWrongSlaveResponse(self):
         """Test an error is raised if the slave id is wrong"""
         query = modbus_tcp.TcpQuery()
-        pdu = "a"
+        pdu = to_data('a')
         request = query.build_request(pdu, 0)
         response = struct.pack(
-            ">HHHB"+str(len(pdu))+"s",
+             ">HHHB" + str(len(pdu)) + "s",
             query._request_mbap.transaction_id,
             query._request_mbap.protocol_id,
             len(pdu)+1,
@@ -227,7 +227,7 @@ class TestTcpQuery(unittest.TestCase):
     def testParseWrongTransactionResponse(self):
         """Test an error is raised if wrong transaction id"""
         query = modbus_tcp.TcpQuery()
-        pdu = "a"
+        pdu = to_data('a')
         request = query.build_request(pdu, 0)
         response = struct.pack(
             ">HHHB"+str(len(pdu))+"s",
@@ -242,7 +242,7 @@ class TestTcpQuery(unittest.TestCase):
     def testParseWrongProtocolIdResponse(self):
         """Test an error is raised if wrong protocol id"""
         query = modbus_tcp.TcpQuery()
-        pdu = "a"
+        pdu = to_data('a')
         request = query.build_request(pdu, 0)
         response = struct.pack(
             ">HHHB"+str(len(pdu))+"s",
@@ -257,7 +257,7 @@ class TestTcpQuery(unittest.TestCase):
     def testParseWrongLengthResponse(self):
         """Test an error is raised if the length is not ok"""
         query = modbus_tcp.TcpQuery()
-        pdu = "a"
+        pdu = to_data('a')
         request = query.build_request(pdu, 0)
         response = struct.pack(
             ">HHHB"+str(len(pdu))+"s",
@@ -272,7 +272,7 @@ class TestTcpQuery(unittest.TestCase):
     def testParseWrongLengthResponse(self):
         """Test an error is raised if the length is not ok"""
         query = modbus_tcp.TcpQuery()
-        pdu = "a"
+        pdu = to_data('a')
         request = query.build_request(pdu, 0)
         response = struct.pack(
             ">HHHB"+str(len(pdu))+"s",
@@ -295,7 +295,7 @@ class TestTcpQuery(unittest.TestCase):
         query = modbus_tcp.TcpQuery()
         i = 0
         for pdu in ["", "a", "a"*127, "abcdefghi"]:
-            request = query.build_request(pdu, i)
+            request = query.build_request(to_data(pdu), i)
             (slave, extracted_pdu) = query.parse_request(request)
             self.assertEqual(extracted_pdu, to_data(pdu))
             self.assertEqual(slave, i)
@@ -310,7 +310,7 @@ class TestTcpQuery(unittest.TestCase):
             self.assertRaises(
                 modbus_tk.modbus_tcp.ModbusInvalidMbapError,
                 query.parse_request,
-                request + to_data('pdu')
+                request + to_data(pdu)
             )
 
     def testBuildResponse(self):
@@ -318,8 +318,8 @@ class TestTcpQuery(unittest.TestCase):
         query = modbus_tcp.TcpQuery()
         i = 0
         for pdu in ["", "a", "a"*127, "abcdefghi"]:
-            request = query.build_request(pdu, i)
-            response = query.build_response(pdu)
+            request = query.build_request(to_data(pdu), i)
+            response = query.build_response(to_data(pdu))
             response_pdu = query.parse_response(response)
             self.assertEqual(to_data(pdu), response_pdu)
             i += 1

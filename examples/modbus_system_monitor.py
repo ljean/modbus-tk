@@ -13,6 +13,8 @@
 
 """
 
+from __future__ import print_function
+
 import time
 
 from modbus_tk import defines
@@ -75,7 +77,7 @@ def main():
         simu.start()
 
     except Exception as excpt:
-        print excpt
+        print(excpt)
 
     finally:
         #close the simulator

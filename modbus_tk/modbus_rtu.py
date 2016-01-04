@@ -11,7 +11,6 @@
 """
 
 import struct
-import six
 import time
 
 from modbus_tk import LOGGER
@@ -37,7 +36,7 @@ class RtuQuery(Query):
         self._request_address = slave
         if (self._request_address < 0) or (self._request_address > 255):
             raise InvalidArgumentError("Invalid address {0}".format(self._request_address))
-        data = struct.pack(">B", self._request_address) + utils.to_data(pdu)
+        data = struct.pack(">B", self._request_address) + pdu
         crc = struct.pack(">H", utils.calculate_crc(data))
         return data + crc
 
@@ -46,10 +45,7 @@ class RtuQuery(Query):
         if len(response) < 3:
             raise ModbusInvalidResponseError("Response length is invalid {0}".format(len(response)))
 
-        if six.PY2:
-            (self._response_address, ) = struct.unpack(">B", response[0:1])
-        else:
-            self._response_address = response[0]
+        (self._response_address, ) = struct.unpack(">B", response[0:1])
 
         if self._request_address != self._response_address:
             raise ModbusInvalidResponseError(
@@ -81,7 +77,7 @@ class RtuQuery(Query):
     def build_response(self, response_pdu):
         """Build the response"""
         self._response_address = self._request_address
-        data = struct.pack(">B", self._response_address) + utils.to_data(response_pdu)
+        data = struct.pack(">B", self._response_address) + response_pdu
         crc = struct.pack(">H", utils.calculate_crc(data))
         return data + crc
 
@@ -129,10 +125,11 @@ class RtuMaster(Master):
 
     def _recv(self, expected_length=-1):
         """Receive the response from the slave"""
-        response = ""
-        read_bytes = "dummy"
-        while read_bytes:
+        response = utils.to_data("")
+        while True:
             read_bytes = self._serial.read(expected_length if expected_length > 0 else 1)
+            if not read_bytes:
+                break
             response += read_bytes
             if expected_length >= 0 and len(response) >= expected_length:
                 #if the expected number of byte is received consider that the response is done
@@ -170,8 +167,8 @@ class RtuServer(Server):
         LOGGER.info("RtuServer %s is %s", self._serial.portstr, "opened" if self._serial.isOpen() else "closed")
 
         self._t0 = utils.calculate_rtu_inter_char(self._serial.baudrate)
-        self._serial.interCharTimeout = self.interchar_multiplier * self._t0
-        self.set_timeout(self.interframe_multiplier * self._t0)
+        self._serial.interCharTimeout = interchar_multiplier * self._t0
+        self.set_timeout(interframe_multiplier * self._t0)
 
     def close(self):
         """close the serial communication"""
@@ -214,18 +211,25 @@ class RtuServer(Server):
         """main function of the server"""
         try:
             #check the status of every socket
-            response = ""
-            request = ""
-            read_bytes = "dummy"
-            while read_bytes:
-                read_bytes = self._serial.read(128)
+            request = utils.to_data('')
+            while True:
+                try:
+                    read_bytes = self._serial.read(128)
+                    if not read_bytes:
+                        break
+                except Exception as e:
+                    self._serial.close()
+                    self._serial.open()
+                    break
                 request += read_bytes
 
             #parse the request
             if request:
+
                 retval = call_hooks("modbus_rtu.RtuServer.after_read", (self, request))
                 if retval is not None:
                     request = retval
+
                 response = self._handle(request)
 
                 #send back the response

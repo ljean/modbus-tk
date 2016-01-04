@@ -12,15 +12,13 @@
 import unittest
 import modbus_tk
 import modbus_tk.modbus_rtu as modbus_rtu
-import threading
 import struct
-import logging
-import serial
 import sys
 import six
 from modbus_tk.utils import to_data
 
 LOGGER = modbus_tk.utils.create_logger()
+
 
 def crc16_alternative(data):
     table =(
@@ -67,6 +65,7 @@ def crc16_alternative(data):
         w = w ^ int(table[i],16)
     return modbus_tk.utils.swap_bytes(w)
 
+
 class TestCrc(unittest.TestCase):
     """Check that the CRC16 calculation"""
     def setUp(self):
@@ -111,6 +110,7 @@ class TestCrc(unittest.TestCase):
             s += struct.pack(">B", i)
             self.assertEqual(crc16_alternative(s), modbus_tk.utils.calculate_crc(s))
 
+
 class TestRtuQuery(unittest.TestCase):
     """Check that RtuQuery class"""
     def setUp(self):
@@ -122,7 +122,7 @@ class TestRtuQuery(unittest.TestCase):
     def testBuildRequest(self):
         """Test the string returned by building a request"""
         query = modbus_rtu.RtuQuery()
-        request = query.build_request("", 0)
+        request = query.build_request(to_data(""), 0)
         expected = struct.pack(">B", 0)
         expected_crc = crc16_alternative(expected)
         expected += struct.pack(">H", expected_crc)
@@ -132,7 +132,7 @@ class TestRtuQuery(unittest.TestCase):
         """Test the string returned by building a request with a slave"""
         query = modbus_rtu.RtuQuery()
         for i in range(0, 256):
-            request = query.build_request("", i)
+            request = query.build_request(to_data(""), i)
             expected = struct.pack(">B", i)
             expected_crc = crc16_alternative(expected)
             expected += struct.pack(">H", expected_crc)
@@ -149,7 +149,7 @@ class TestRtuQuery(unittest.TestCase):
         query = modbus_rtu.RtuQuery()
         for i in range(247):
             for pdu in ["", "a", "a"*127, "abcdefghi"]:
-                request = query.build_request(pdu, i)
+                request = query.build_request(to_data(pdu), i)
                 expected = struct.pack(">B"+str(len(pdu))+"s", i, to_data(pdu))
                 expected_crc = crc16_alternative(expected)
                 expected += struct.pack(">H", expected_crc)
@@ -160,7 +160,7 @@ class TestRtuQuery(unittest.TestCase):
         query = modbus_rtu.RtuQuery()
         for i in range(247):
             for pdu in ["", "a", "a"*127, "abcdefghi"]:
-                request = query.build_request("a", i)
+                request = query.build_request(to_data(pdu), i)
                 response = struct.pack(">B"+str(len(pdu))+"s", i, to_data(pdu))
                 response_crc = crc16_alternative(response)
                 response += struct.pack(">H", response_crc)
@@ -176,9 +176,9 @@ class TestRtuQuery(unittest.TestCase):
     def testParseWrongSlaveResponse(self):
         """Test an error is raised if the slave id is wrong"""
         query = modbus_rtu.RtuQuery()
-        pdu = "a"
+        pdu = to_data("a")
         request = query.build_request(pdu, 5)
-        response = struct.pack(">B"+str(len(pdu))+"s", 8, to_data(pdu))
+        response = struct.pack(">B" + str(len(pdu)) + "s", 8, pdu)
         response_crc = crc16_alternative(response)
         response += struct.pack(">H", response_crc)
         self.assertRaises(modbus_tk.modbus.ModbusInvalidResponseError, query.parse_response, response)
@@ -186,9 +186,9 @@ class TestRtuQuery(unittest.TestCase):
     def testParseWrongCrcResponse(self):
         """Test an error is raised if wrong transaction id"""
         query = modbus_rtu.RtuQuery()
-        pdu = "a"
+        pdu = to_data("a")
         request = query.build_request(pdu, 5)
-        response = struct.pack(">B"+str(len(pdu))+"s", 5, to_data(pdu))
+        response = struct.pack(">B" + str(len(pdu)) + "s", 5, pdu)
         response_crc = crc16_alternative(response)+1
         response += struct.pack(">H", response_crc)
         self.assertRaises(modbus_tk.modbus.ModbusInvalidResponseError, query.parse_response, response)
@@ -197,14 +197,14 @@ class TestRtuQuery(unittest.TestCase):
         """Test an error is raised if the request is too short"""
         query = modbus_rtu.RtuQuery()
         for i in range(3):
-            self.assertRaises(modbus_tk.modbus.ModbusInvalidRequestError, query.parse_request, "a"*i)
+            self.assertRaises(modbus_tk.modbus.ModbusInvalidRequestError, query.parse_request, to_data("a" * i))
 
     def testParseRequest(self):
         """Test that Modbus Rtu part of the request is understood"""
         query = modbus_rtu.RtuQuery()
         i = 0
         for pdu in ["", "a", "a"*127, "abcdefghi"]:
-            request = query.build_request(pdu, i)
+            request = query.build_request(to_data(pdu), i)
             (slave, extracted_pdu) = query.parse_request(request)
             self.assertEqual(extracted_pdu, to_data(pdu))
             self.assertEqual(slave, i)
@@ -215,8 +215,8 @@ class TestRtuQuery(unittest.TestCase):
         query = modbus_rtu.RtuQuery()
         i = 0
         for pdu in ["", "a", "a"*127, "abcdefghi"]:
-            request = query.build_request(pdu, i)
-            response = query.build_response(pdu)
+            request = query.build_request(to_data(pdu), i)
+            response = query.build_response(to_data(pdu))
             response_pdu = query.parse_response(response)
             self.assertEqual(to_data(pdu), response_pdu)
             i += 1

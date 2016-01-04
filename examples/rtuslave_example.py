@@ -17,12 +17,15 @@ from modbus_tk import modbus_rtu
 import serial
 
 
+PORT = 0
+#PORT = '/dev/ptyp5'
+
 def main():
     """main"""
     logger = modbus_tk.utils.create_logger(name="console", record_format="%(message)s")
 
     #Create the server
-    server = modbus_rtu.RtuServer(serial.Serial(0))
+    server = modbus_rtu.RtuServer(serial.Serial(PORT))
 
     try:
         logger.info("running...")
@@ -31,7 +34,7 @@ def main():
         server.start()
 
         slave_1 = server.add_slave(1)
-        slave_1.add_block('0', cst.HOLDING_REGISTERS, 100, 100)
+        slave_1.add_block('0', cst.HOLDING_REGISTERS, 0, 100)
         while True:
             cmd = sys.stdin.readline()
             args = cmd.split(' ')

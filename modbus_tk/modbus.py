@@ -240,7 +240,7 @@ class Master(object):
                     #copy data in pdu
                     pdu += struct.pack(">B", j)
                 if not data_format:
-                    data_format = ">"+(len(output_value)*"B")
+                    data_format = ">" + (len(output_value) * "B")
                 if expected_length < 0:
                     #No length was specified and calculated length can be used:
                     #slave + func + SubFunc1 + SubFunc2 + Data + crc1 + crc2
@@ -259,11 +259,11 @@ class Master(object):
                 #copy data in pdu
                 pdu += struct.pack(">"+fmt, j)
             if not data_format:
-                data_format = ">"+(quantity_of_x*"H")
+                data_format = ">" + (quantity_of_x * "H")
             if expected_length < 0:
                 #No lenght was specified and calculated length can be used:
                 #slave + func + bytcodeLen + bytecode x 2 + crc1 + crc2
-                expected_length = 2*quantity_of_x + 5
+                expected_length = 2 * quantity_of_x + 5
         else:
             raise ModbusFunctionNotSupportedError("The {0} function code is not supported. ".format(function_code))
 
@@ -819,8 +819,9 @@ class Databank(object):
         #If the request was not handled correctly, return a server error response
         func_code = 1
         if len(request_pdu) > 0:
-            (func_code, ) = struct.unpack(">B", request_pdu[0])
-        return struct.pack(">BB", func_code+0x80, defines.SLAVE_DEVICE_FAILURE)
+            (func_code, ) = struct.unpack(">B", request_pdu[0:1])
+
+        return struct.pack(">BB", func_code + 0x80, defines.SLAVE_DEVICE_FAILURE)
 
 
 class Server(object):

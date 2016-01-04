@@ -36,7 +36,7 @@ def main():
         #logger.info(master.execute(1, cst.WRITE_MULTIPLE_COILS, 0, output_value=[1, 1, 0, 1, 1, 0, 1, 1]))
         #logger.info(master.execute(1, cst.WRITE_MULTIPLE_REGISTERS, 100, output_value=xrange(12)))
 
-    except modbus_tk.modbus.ModbusError, exc:
+    except modbus_tk.modbus.ModbusError as exc:
         logger.error("%s- Code=%d", exc, exc.get_exception_code())
 
 if __name__ == "__main__":

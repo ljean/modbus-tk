@@ -121,7 +121,7 @@ class TcpQuery(Query):
         self._request_mbap.transaction_id = self._get_transaction_id()
         self._request_mbap.unit_id = slave
         mbap = self._request_mbap.pack()
-        return mbap + to_data(pdu)
+        return mbap + pdu
 
     def parse_response(self, response):
         """Extract the pdu from the Modbus TCP response"""
@@ -149,7 +149,7 @@ class TcpQuery(Query):
         """Build the response"""
         self._response_mbap.clone(self._request_mbap)
         self._response_mbap.length = len(response_pdu) + 1
-        return self._response_mbap.pack() + to_data(response_pdu)
+        return self._response_mbap.pack() + response_pdu
 
 
 class TcpMaster(Master):
@@ -209,7 +209,7 @@ class TcpMaster(Master):
         Do not take expected_length into account because the length of the response is
         written in the mbap. Used for RTU only
         """
-        response = ""
+        response = to_data('')
         length = 255
         while len(response) < length:
             rcv_byte = self._sock.recv(1)
