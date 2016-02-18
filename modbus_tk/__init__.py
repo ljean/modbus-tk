@@ -22,6 +22,8 @@ contributors:
 * tor.sjowall
 * smachin1000
 
+Please let us know if your name is missing!
+
 """
 
 VERSION = '0.5.0'
