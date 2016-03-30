@@ -18,10 +18,9 @@ import os
 import sys
 import select
 import serial
-import six
 import threading
 import time
-if six.PY2:
+if utils.PY2:
     import Queue
     import SocketServer
 else:
