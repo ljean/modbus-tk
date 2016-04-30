@@ -121,6 +121,7 @@ class RtuMaster(Master):
         self._serial.flushOutput()
 
         self._serial.write(request)
+        time.sleep(self.get_timeout())
 
     def _recv(self, expected_length=-1):
         """Receive the response from the slave"""
