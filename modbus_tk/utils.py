@@ -10,13 +10,15 @@
 """
 from __future__ import print_function
 
+import sys
 import threading
 import logging
 import socket
 import select
-import six
 from modbus_tk import LOGGER
 
+PY2 = sys.version_info[0] == 2
+PY3 = sys.version_info[0] == 3
 
 def threadsafe_function(fcn):
     """decorator making sure that the decorated function is thread safe"""
@@ -56,7 +58,7 @@ def get_log_buffer(prefix, buff):
     """Format binary data into a string for debug purpose"""
     log = prefix
     for i in buff:
-        log += str(ord(i) if six.PY2 else i) + "-"
+        log += str(ord(i) if PY2 else i) + "-"
     return log[:-1]
 
 
@@ -84,7 +86,7 @@ class LogitHandler(logging.Handler):
     def emit(self, record):
         """format and send the record over udp"""
         data = self.format(record) + "\r\n"
-        if six.PY3:
+        if PY3:
             data = to_data(data)
         self._sock.sendto(data, self._dest)
 
@@ -133,7 +135,7 @@ def calculate_crc(data):
     """Calculate the CRC16 of a datagram"""
     crc = 0xFFFF
     for i in data:
-        if six.PY2:
+        if PY2:
             crc = crc ^ ord(i)
         else:
             crc = crc ^ i
@@ -192,7 +194,7 @@ class WorkerThread(object):
 
 
 def to_data(string_data):
-    if six.PY2:
+    if PY2:
         return string_data
     else:
         return bytearray(string_data, 'ascii')

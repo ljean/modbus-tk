@@ -41,7 +41,6 @@ setup(
     packages=['modbus_tk'],
     platforms=["Linux", "Mac OS X", "Win"],
     install_requires=[
-        'pylint==1.4.3',
         'pyserial==2.7',
         'six==1.10.0',
     ],
