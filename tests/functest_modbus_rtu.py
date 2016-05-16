@@ -153,7 +153,7 @@ class TestRtuSpecific(TestQueriesSetupAndTeardown, unittest.TestCase):
         try:
             self.master._send(bad_query)
             self.master._recv()
-        except modbus_tk.modbus.ModbusError, ex:
+        except modbus_tk.modbus.ModbusError as ex:
             self.assertEqual(ex.get_exception_code(), 1)
             return
 
@@ -186,7 +186,7 @@ class TestRtuSpecific(TestQueriesSetupAndTeardown, unittest.TestCase):
                         result = self_.master.execute(id, modbus_tk.defines.READ_HOLDING_REGISTERS, 0, 100)
                         id += 1
                         if id > 12: id = 11
-            except Exception, msg:
+            except Exception as msg:
                 LOGGER.error(msg)
                 q.put(1)
         

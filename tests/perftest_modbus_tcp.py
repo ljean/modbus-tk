@@ -77,7 +77,7 @@ class TestStress(unittest.TestCase):
                     if result != tuple(range(100)):
                         q.put(1)
                     time.sleep(0.1)
-            except Exception, msg:
+            except Exception as msg:
                 LOGGER.error(msg)
                 q.put(1)
         
