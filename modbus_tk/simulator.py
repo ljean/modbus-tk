@@ -20,12 +20,6 @@ import select
 import serial
 import threading
 import time
-if utils.PY2:
-    import Queue
-    import SocketServer
-else:
-    import queue as Queue
-    import socketserver as SocketServer
 
 import modbus_tk
 from modbus_tk import hooks
@@ -33,17 +27,23 @@ from modbus_tk import modbus
 from modbus_tk import modbus_tcp
 from modbus_tk import modbus_rtu
 
+if modbus_tk.utils.PY2:
+    import Queue
+    import SocketServer
+else:
+    import queue as Queue
+    import socketserver as SocketServer
 
-#add logging capability
+
+# add logging capability
 LOGGER = modbus_tk.utils.create_logger(name="console", record_format="%(message)s")
 
-#The communication between the server and the user interfaces (console or rpc)
-#are done through queues
+# The communication between the server and the user interfaces (console or rpc) are done through queues
 
-#command received from the interfaces
+# command received from the interfaces
 INPUT_QUEUE = Queue.Queue()
 
-#response to be sent back by the interfaces
+# response to be sent back by the interfaces
 OUTPUT_QUEUE = Queue.Queue()
 
 
