@@ -88,21 +88,21 @@ class RtuMaster(Master):
     def __init__(self, serial, interchar_multiplier=1.5, interframe_multiplier=3.5):
         """Constructor. Pass the pyserial.Serial object"""
         self._serial = serial
-        LOGGER.info("RtuMaster %s is %s", self._serial.portstr, "opened" if self._serial.isOpen() else "closed")
+        LOGGER.info("RtuMaster %s is %s", self._serial.name, "opened" if self._serial.is_open else "closed")
         super(RtuMaster, self).__init__(self._serial.timeout)
         self._t0 = utils.calculate_rtu_inter_char(self._serial.baudrate)
-        self._serial.interCharTimeout = interchar_multiplier * self._t0
+        self._serial.inter_byte_timeout = interchar_multiplier * self._t0
         self.set_timeout(interframe_multiplier * self._t0)
 
     def _do_open(self):
         """Open the given serial port if not already opened"""
-        if not self._serial.isOpen():
+        if not self._serial.is_open:
             call_hooks("modbus_rtu.RtuMaster.before_open", (self, ))
             self._serial.open()
 
     def _do_close(self):
         """Close the serial port if still opened"""
-        if self._serial.isOpen():
+        if self._serial.is_open:
             self._serial.close()
             call_hooks("modbus_rtu.RtuMaster.after_close", (self, ))
 
@@ -117,8 +117,8 @@ class RtuMaster(Master):
         if retval is not None:
             request = retval
 
-        self._serial.flushInput()
-        self._serial.flushOutput()
+        self._serial.reset_input_buffer()
+        self._serial.reset_output_buffer()
 
         self._serial.write(request)
 
@@ -163,15 +163,15 @@ class RtuServer(Server):
         super(RtuServer, self).__init__(databank if databank else Databank())
 
         self._serial = serial
-        LOGGER.info("RtuServer %s is %s", self._serial.portstr, "opened" if self._serial.isOpen() else "closed")
+        LOGGER.info("RtuServer %s is %s", self._serial.name, "opened" if self._serial.is_open else "closed")
 
         self._t0 = utils.calculate_rtu_inter_char(self._serial.baudrate)
-        self._serial.interCharTimeout = interchar_multiplier * self._t0
+        self._serial.inter_byte_timeout = interchar_multiplier * self._t0
         self.set_timeout(interframe_multiplier * self._t0)
 
     def close(self):
         """close the serial communication"""
-        if self._serial.isOpen():
+        if self._serial.is_open:
             call_hooks("modbus_rtu.RtuServer.before_close", (self, ))
             self._serial.close()
             call_hooks("modbus_rtu.RtuServer.after_close", (self, ))
@@ -197,7 +197,7 @@ class RtuServer(Server):
 
     def _do_init(self):
         """initialize the serial connection"""
-        if not self._serial.isOpen():
+        if not self._serial.is_open:
             call_hooks("modbus_rtu.RtuServer.before_open", (self, ))
             self._serial.open()
             call_hooks("modbus_rtu.RtuServer.after_open", (self, ))
