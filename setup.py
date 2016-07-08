@@ -42,6 +42,5 @@ setup(
     platforms=["Linux", "Mac OS X", "Win"],
     install_requires=[
         'pyserial==2.7',
-        'six==1.10.0',
     ],
 )

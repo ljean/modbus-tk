@@ -14,8 +14,7 @@ import modbus_tk
 import modbus_tk.modbus_rtu as modbus_rtu
 import struct
 import sys
-import six
-from modbus_tk.utils import to_data
+from modbus_tk.utils import to_data, PY2, PY3
 
 LOGGER = modbus_tk.utils.create_logger()
 
@@ -57,7 +56,7 @@ def crc16_alternative(data):
     )
     w = int("ffff", 16)
     for c in data:
-        if six.PY2:
+        if PY2:
             i = (ord(c) ^ w) & 255
         else:
             i = ((c) ^ w) & 255
