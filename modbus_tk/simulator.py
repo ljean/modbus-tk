@@ -28,10 +28,10 @@ from modbus_tk import modbus_tcp
 from modbus_tk import modbus_rtu
 
 if modbus_tk.utils.PY2:
-    import Queue
+    import Queue as queue
     import SocketServer
 else:
-    import queue as Queue
+    import queue
     import socketserver as SocketServer
 
 
@@ -41,10 +41,10 @@ LOGGER = modbus_tk.utils.create_logger(name="console", record_format="%(message)
 # The communication between the server and the user interfaces (console or rpc) are done through queues
 
 # command received from the interfaces
-INPUT_QUEUE = Queue.Queue()
+INPUT_QUEUE = queue.Queue()
 
 # response to be sent back by the interfaces
-OUTPUT_QUEUE = Queue.Queue()
+OUTPUT_QUEUE = queue.Queue()
 
 
 class CompositeServer(modbus.Server):

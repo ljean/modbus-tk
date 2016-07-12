@@ -16,10 +16,14 @@ import struct
 import sys
 import threading
 import unittest
-import Queue
 
 import modbus_tk
 from modbus_tk import modbus_rtu, hooks, utils
+
+if utils.PY2:
+    import Queue as queue
+elif utils.PY3:
+    import queue
 
 from functest_modbus import TestQueries, TestQueriesSetupAndTeardown, SharedDataTest
 
@@ -172,7 +176,7 @@ class TestRtuSpecific(TestQueriesSetupAndTeardown, unittest.TestCase):
 
         slaves = [self.server.add_slave(11), self.server.add_slave(12)]
 
-        q = Queue.Queue()
+        q = queue.Queue()
 
         for s in slaves:
             s.add_block("a", modbus_tk.defines.HOLDING_REGISTERS, 0, 100)
