@@ -15,14 +15,15 @@ import sys
 import threading
 import time
 import unittest
-try:
-    import Queue
-except ImportError:
-    import queue as Queue
 
 import modbus_tk
 import modbus_tk.modbus_tcp as modbus_tcp
 import modbus_tk.utils as utils
+
+if utils.PY2:
+    import Queue as queue
+elif utils.PY3:
+    import queue
 
 from functest_modbus import TestQueries, TestQueriesSetupAndTeardown, SharedDataTest
 
@@ -178,7 +179,7 @@ class TestTcpSpecific(TestQueriesSetupAndTeardown, unittest.TestCase):
     #         self.server.add_slave(12),
     #     ]
     #
-    #     q = Queue.Queue()
+    #     q = queue.Queue()
     #
     #     for s in slaves:
     #         s.add_block("a", modbus_tk.defines.HOLDING_REGISTERS, 0, 100)
