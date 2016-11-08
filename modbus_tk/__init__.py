@@ -21,6 +21,11 @@ contributors:
 * riaan.doorduin
 * tor.sjowall
 * smachin1000
+* GadgetSteve 
+* dhoomakethu
+* zerox1212
+* ffreckle
+* Matthew West
 
 Please let us know if your name is missing!
 
