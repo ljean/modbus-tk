@@ -26,7 +26,7 @@ Please let us know if your name is missing!
 
 """
 
-VERSION = '0.5.1'
+VERSION = '0.5.2'
 
 import logging
 LOGGER = logging.getLogger("modbus_tk")
