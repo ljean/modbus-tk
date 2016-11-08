@@ -20,6 +20,7 @@ from modbus_tk import LOGGER
 PY2 = sys.version_info[0] == 2
 PY3 = sys.version_info[0] == 3
 
+
 def threadsafe_function(fcn):
     """decorator making sure that the decorated function is thread safe"""
     lock = threading.RLock()
@@ -30,13 +31,15 @@ def threadsafe_function(fcn):
            Unless kwargs['threadsafe'] == False
         """
         threadsafe = kwargs.pop('threadsafe', True)
-        if threadsafe: lock.acquire()
+        if threadsafe:
+            lock.acquire()
         try:
             ret = fcn(*args, **kwargs)
         except Exception as excpt:
             raise excpt
         finally:
-            if threadsafe: lock.release()
+            if threadsafe:
+                lock.release()
         return ret
     return new
 
