@@ -9,9 +9,11 @@
  This is distributed under GNU LGPL license, see license.txt
 """
 
+from __future__ import print_function
+
 import modbus_tk
 import modbus_tk.defines as cst
-from modbus_tk import modbus_tcp
+from modbus_tk import modbus_tcp, hooks
 
 
 def main():
@@ -19,7 +21,20 @@ def main():
     logger = modbus_tk.utils.create_logger("console")
 
     try:
-        #Connect to the slave
+
+        def on_before_connect(args):
+            master = args[0]
+            print("on_before_connect", master._host, master._port)
+
+        hooks.install_hook("modbus_tcp.TcpMaster.before_connect", on_before_connect)
+
+        def on_after_recv(args):
+            response = args[1]
+            print("on_after_recv", len(response), "bytes received")
+
+        hooks.install_hook("modbus_tcp.TcpMaster.after_recv", on_after_recv)
+
+        # Connect to the slave
         master = modbus_tcp.TcpMaster()
         master.set_timeout(5.0)
         logger.info("connected")
