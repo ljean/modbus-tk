@@ -134,8 +134,8 @@ class ConsoleInterface(threading.Thread):
             self.console_handle = ctypes.windll.Kernel32.GetStdHandle(ctypes.c_ulong(0xfffffff5))
             ctypes.windll.Kernel32.WaitForSingleObject.restype = ctypes.c_ulong
 
-        if os.name == "posix":
-            #select already imported
+        elif os.name == "posix":
+            # select already imported
             pass
 
         else:
@@ -372,8 +372,8 @@ def run_simulator():
     finally:
         simulator.close()
         LOGGER.info("modbus_tk.simulator has stopped!")
-        #In python 2.5, the SocketServer shutdown is not working Ok
-        #The 2 lines below are an ugly temporary workaround
+        # In python 2.5, the SocketServer shutdown is not working Ok
+        # The 2 lines below are an ugly temporary workaround
         time.sleep(1.0)
         sys.exit()
 
