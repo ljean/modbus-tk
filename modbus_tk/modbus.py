@@ -213,13 +213,20 @@ class Master(object):
                 expected_length = 8
 
         elif function_code == defines.WRITE_MULTIPLE_REGISTERS:
-            byte_count = 2 * len(output_value)
-            pdu = struct.pack(">BHHB", function_code, starting_address, len(output_value), byte_count)
-            for j in output_value:
-                fmt = "H" if j >= 0 else "h"
-                pdu += struct.pack(">" + fmt, j)
-            if not data_format:
-                data_format = ">HH"
+            if output_value and data_format:
+                byte_count =  struct.calcsize(data_format)
+            else:
+                byte_count = 2 * len(output_value)
+            pdu = struct.pack(">BHHB", function_code, starting_address, byte_count / 2, byte_count)
+            if output_value and data_format:
+                pdu += struct.pack(data_format, *output_value)
+            else:
+                for j in output_value:
+                    fmt = "H" if j >= 0 else "h"
+                    pdu += struct.pack(">" + fmt, j)
+            # data_format is now used to process response which is always 2 registers:
+            #   1) data address of first register, 2) number of registers written
+            data_format = ">HH"
             if expected_length < 0:
                 # No length was specified and calculated length can be used:
                 # slave + func + adress1 + adress2 + outputQuant1 + outputQuant2 + crc1 + crc2
