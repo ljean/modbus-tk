@@ -41,6 +41,6 @@ setup(
     packages=['modbus_tk'],
     platforms=["Linux", "Mac OS X", "Win"],
     install_requires=[
-        'pyserial==3.1',
+        'pyserial>=3.1',
     ],
 )
