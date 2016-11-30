@@ -1,6 +1,8 @@
 modbus-tk: Create Modbus app easily with Python
 =================================================
 
+[![Build Status](https://semaphoreci.com/api/v1/ljean/modbus-tk/branches/master/shields_badge.svg)](https://semaphoreci.com/ljean/modbus-tk)
+
 Download / Install
 ------------------------------------
 Current version is 0.5.4. It is available on PyPI https://pypi.python.org/pypi/modbus_tk
