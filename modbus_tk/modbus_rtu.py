@@ -209,7 +209,7 @@ class RtuServer(Server):
     def _do_run(self):
         """main function of the server"""
         try:
-            #check the status of every socket
+            # check the status of every socket
             request = utils.to_data('')
             while True:
                 try:
@@ -222,7 +222,7 @@ class RtuServer(Server):
                     break
                 request += read_bytes
 
-            #parse the request
+            # parse the request
             if request:
 
                 retval = call_hooks("modbus_rtu.RtuServer.after_read", (self, request))
@@ -231,7 +231,7 @@ class RtuServer(Server):
 
                 response = self._handle(request)
 
-                #send back the response
+                # send back the response
                 retval = call_hooks("modbus_rtu.RtuServer.before_write", (self, response))
                 if retval is not None:
                     response = retval
@@ -239,6 +239,8 @@ class RtuServer(Server):
                 if response:
                     self._serial.write(response)
                     time.sleep(self.get_timeout())
+
+                call_hooks("modbus_rtu.RtuServer.after_write", (self, response))
 
         except Exception as excpt:
             LOGGER.error("Error while handling request, Exception occurred: %s", excpt)

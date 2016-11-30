@@ -31,6 +31,7 @@ def install_hook(name, fct):
     modbus_rtu.RtuServer.after_open(((server, ))
     modbus_rtu.RtuServer.after_read((server, request)) returns modified request or None
     modbus_rtu.RtuServer.before_write((server, response))  returns modified response or None
+    modbus_rtu.RtuServer.after_write((server, response))
     modbus_rtu.RtuServer.on_error((server, excpt))
 
     modbus_tcp.TcpMaster.before_connect((master, ))
@@ -38,7 +39,9 @@ def install_hook(name, fct):
     modbus_tcp.TcpMaster.before_close((master, ))
     modbus_tcp.TcpMaster.after_close((master, ))
     modbus_tcp.TcpMaster.before_send((master, request))
+    modbus_tcp.TcpServer.after_send((master, request))
     modbus_tcp.TcpMaster.after_recv((master, response))
+
 
     modbus_tcp.TcpServer.on_connect((server, client, address))
     modbus_tcp.TcpServer.on_disconnect((server, sock))
