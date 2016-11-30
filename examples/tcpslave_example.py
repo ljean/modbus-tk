@@ -30,7 +30,7 @@ def main():
         server.start()
 
         slave_1 = server.add_slave(1)
-        slave_1.add_block('0', cst.HOLDING_REGISTERS, 100, 100)
+        slave_1.add_block('0', cst.HOLDING_REGISTERS, 0, 100)
 
         while True:
             cmd = sys.stdin.readline()

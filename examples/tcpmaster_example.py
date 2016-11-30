@@ -12,11 +12,17 @@
 import modbus_tk
 import modbus_tk.defines as cst
 from modbus_tk import modbus_tcp
-
+from modbus_tk.hooks import install_hook
 
 def main():
     """main"""
     logger = modbus_tk.utils.create_logger("console")
+
+    def on_after_recv(data):
+        master, bytes_data = data
+        print(bytes_data)
+
+    install_hook('modbus.Master.after_recv', on_after_recv)
 
     try:
         #Connect to the slave
