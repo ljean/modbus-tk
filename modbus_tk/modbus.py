@@ -550,7 +550,7 @@ class Slave(object):
             if count >= quantity_of_x:
                 break
             fmt = "B" if self.unsigned else "b"
-            (byte_value, ) = struct.unpack(">"+fmt, request_pdu[6+i])
+            (byte_value, ) = struct.unpack(">"+fmt, request_pdu[6+i:7+i])
             for j in range(8):
                 if count >= quantity_of_x:
                     break
