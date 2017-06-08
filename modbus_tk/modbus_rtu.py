@@ -105,6 +105,7 @@ class RtuMaster(Master):
         if self._serial.is_open:
             self._serial.close()
             call_hooks("modbus_rtu.RtuMaster.after_close", (self, ))
+            return True
 
     def set_timeout(self, timeout_in_sec):
         """Change the timeout value"""

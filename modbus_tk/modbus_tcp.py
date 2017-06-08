@@ -180,6 +180,7 @@ class TcpMaster(Master):
             self._sock.close()
             call_hooks("modbus_tcp.TcpMaster.after_close", (self, ))
             self._sock = None
+            return True
 
     def set_timeout(self, timeout_in_sec):
         """Change the timeout value"""

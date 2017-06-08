@@ -102,8 +102,9 @@ class Master(object):
     def close(self):
         """close the communication with the slave"""
         if self._is_opened:
-            self._do_close()
-            self._is_opened = False
+            ret = self._do_close()
+            if ret:
+                self._is_opened = False
 
     def _do_open(self):
         """Open the MAC layer"""
