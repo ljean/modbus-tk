@@ -759,12 +759,13 @@ class Slave(object):
 class Databank(object):
     """A databank is a shared place containing the data of all slaves"""
 
-    def __init__(self):
+    def __init__(self, error_on_missing_slave=True):
         """Constructor"""
         # the map of slaves by ids
         self._slaves = {}
         # protect access to the map of slaves
         self._lock = threading.RLock()
+        self.error_on_missing_slave = error_on_missing_slave
 
     def add_slave(self, slave_id, unsigned=True, memory=None):
         """Add a new slave with the given id"""
@@ -814,7 +815,14 @@ class Databank(object):
                     self._slaves[key].handle_request(request_pdu, broadcast=True)
                 return
             else:
-                slave = self.get_slave(slave_id)
+                try:
+                    slave = self.get_slave(slave_id)
+                except MissingKeyError:
+                    if self.error_on_missing_slave:
+                        raise
+                    else:
+                        return ""
+
                 response_pdu = slave.handle_request(request_pdu)
                 # make the full response
                 response = query.build_response(response_pdu)

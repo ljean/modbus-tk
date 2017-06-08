@@ -149,7 +149,7 @@ class RtuServer(Server):
     """This class implements a simple and mono-threaded modbus rtu server"""
     _timeout = 0
 
-    def __init__(self, serial, databank=None, **kwargs):
+    def __init__(self, serial, databank=None, error_on_missing_slave=True, **kwargs):
         """
         Constructor: initializes the server settings
         serial: a pyserial object
@@ -160,7 +160,8 @@ class RtuServer(Server):
         interframe_multiplier = kwargs.pop('interframe_multiplier', 3.5)
         interchar_multiplier = kwargs.pop('interchar_multiplier', 1.5)
 
-        super(RtuServer, self).__init__(databank if databank else Databank())
+        databank = databank if databank else Databank(error_on_missing_slave=error_on_missing_slave)
+        super(RtuServer, self).__init__(databank)
 
         self._serial = serial
         LOGGER.info("RtuServer %s is %s", self._serial.name, "opened" if self._serial.is_open else "closed")

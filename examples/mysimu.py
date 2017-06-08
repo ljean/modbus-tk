@@ -69,7 +69,7 @@ def main():
     if 'rtu' in sys.argv:
         server = RtuServer(serial.Serial(port=sys.argv[-1]))
     else:
-        server = TcpServer()
+        server = TcpServer(error_on_missing_slave=True)
 
     simu = MySimulator(server)
 

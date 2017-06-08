@@ -237,9 +237,10 @@ class TcpServer(Server):
     for example: You must set address to 'loaclhost', if youjust want to accept local connections
     """
 
-    def __init__(self, port=502, address='', timeout_in_sec=1, databank=None):
+    def __init__(self, port=502, address='', timeout_in_sec=1, databank=None, error_on_missing_slave=True):
         """Constructor: initializes the server settings"""
-        super(TcpServer, self).__init__(databank if databank else Databank())
+        databank = databank if databank else Databank(error_on_missing_slave=error_on_missing_slave)
+        super(TcpServer, self).__init__(databank)
         self._sock = None
         self._sa = (address, port)
         self._timeout_in_sec = timeout_in_sec
