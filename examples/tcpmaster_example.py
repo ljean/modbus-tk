@@ -47,6 +47,10 @@ def main():
 
         logger.info(master.execute(1, cst.READ_HOLDING_REGISTERS, 0, 3))
 
+        # Read and write floats
+        # master.execute(1, cst.WRITE_MULTIPLE_REGISTERS, starting_address=0, output_value=[3.14], data_format='>f')
+        # logger.info(master.execute(1, cst.READ_HOLDING_REGISTERS, 0, 2, data_format='>f'))
+
         # send some queries
         # logger.info(master.execute(1, cst.READ_COILS, 0, 10))
         # logger.info(master.execute(1, cst.READ_DISCRETE_INPUTS, 0, 8))
