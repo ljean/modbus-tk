@@ -12,10 +12,12 @@
 from __future__ import print_function
 
 import sys
+import struct
 
 from modbus_tk.simulator import Simulator, LOGGER
 from modbus_tk.defines import HOLDING_REGISTERS
 from modbus_tk.modbus_tcp import TcpServer
+from modbus_tk.utils import PY2
 
 try:
     import serial
@@ -32,6 +34,7 @@ class MySimulator(Simulator):
         Simulator.__init__(self, *args, **kwargs)
         # add a new command: cv will make possible to change a value
         self.add_command("cv", self.change_value)
+        self.add_command("set_pi", self.set_pi)
 
         # create a slave and block
         slave = self.server.add_slave(1)
@@ -56,9 +59,26 @@ class MySimulator(Simulator):
         # operates on slave 1 and block foo
         slave = self.server.get_slave(1)
         slave.set_values("foo", address, values)
+        return self._tuple_to_str(values)
 
-        # get the register values for info
-        values = slave.get_values("foo", address, len(values))
+    def set_pi(self, args):
+        """change the value of some registers"""
+        address = int(args[1])
+
+        # operates on slave 1 and block foo
+        slave = self.server.get_slave(1)
+
+        if PY2:
+            pi_bytes = [ord(a_byte) for a_byte in struct.pack("f", 3.14)]
+        else:
+            pi_bytes = [int(a_byte) for a_byte in struct.pack("f", 3.14)]
+
+        pi_register1 = pi_bytes[0] * 256 + pi_bytes[1]
+        pi_register2 = pi_bytes[2] * 256 + pi_bytes[3]
+
+        slave.set_values("foo", address, [pi_register1, pi_register2])
+
+        values = slave.get_values("foo", address, 2)
         return self._tuple_to_str(values)
 
 
