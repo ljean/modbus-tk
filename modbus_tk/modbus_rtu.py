@@ -127,6 +127,10 @@ class RtuMaster(Master):
 
         self._serial.write(request)
 
+        # Read the echo data, and discard it
+        if self.handle_local_echo:
+            self._serial.read(len(request))
+
     def _recv(self, expected_length=-1):
         """Receive the response from the slave"""
         response = utils.to_data("")
@@ -174,6 +178,10 @@ class RtuServer(Server):
         self._t0 = utils.calculate_rtu_inter_char(self._serial.baudrate)
         self._serial.inter_byte_timeout = interchar_multiplier * self._t0
         self.set_timeout(interframe_multiplier * self._t0)
+
+        # For some RS-485 adapters, the sent data(echo data) appears before modbus response.  
+        # So read  echo data and discard it.  By yush0602@gmail.com
+        self.handle_local_echo = False
 
     def close(self):
         """close the serial communication"""
