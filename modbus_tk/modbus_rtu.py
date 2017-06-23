@@ -85,12 +85,16 @@ class RtuQuery(Query):
 class RtuMaster(Master):
     """Subclass of Master. Implements the Modbus RTU MAC layer"""
 
-    def __init__(self, serial, interchar_multiplier=1.5, interframe_multiplier=3.5):
+    def __init__(self, serial, interchar_multiplier=1.5, interframe_multiplier=3.5, t0=None):
         """Constructor. Pass the pyserial.Serial object"""
         self._serial = serial
         LOGGER.info("RtuMaster %s is %s", self._serial.name, "opened" if self._serial.is_open else "closed")
         super(RtuMaster, self).__init__(self._serial.timeout)
-        self._t0 = utils.calculate_rtu_inter_char(self._serial.baudrate)
+
+        if t0:
+            self._t0 = t0
+        else:
+            self._t0 = utils.calculate_rtu_inter_char(self._serial.baudrate)
         self._serial.inter_byte_timeout = interchar_multiplier * self._t0
         self.set_timeout(interframe_multiplier * self._t0)
 
