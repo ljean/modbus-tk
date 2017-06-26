@@ -218,7 +218,7 @@ class Master(object):
                 byte_count =  struct.calcsize(data_format)
             else:
                 byte_count = 2 * len(output_value)
-            pdu = struct.pack(">BHHB", function_code, starting_address, byte_count / 2, byte_count)
+            pdu = struct.pack(">BHHB", function_code, starting_address, byte_count // 2, byte_count)
             if output_value and data_format:
                 pdu += struct.pack(data_format, *output_value)
             else:
