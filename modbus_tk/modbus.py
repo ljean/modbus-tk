@@ -747,7 +747,7 @@ class Slave(object):
 
             if (offset < 0) or ((offset + size) > block.size):
                 raise OutOfModbusBlockError(
-                    "address %s size {0} is out of block {1}".format(address, size, block_name)
+                    "address {0} size {1} is out of block {2}".format(address, size, block_name)
                 )
 
             # returns the values
