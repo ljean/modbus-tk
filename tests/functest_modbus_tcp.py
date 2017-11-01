@@ -152,6 +152,9 @@ class TcpTestQueries(TestQueries, unittest.TestCase):
     def _get_master(self):
         return modbus_tcp.TcpMaster()        
 
+class TcpTestQueriesSigned(TcpTestQueries, unittest.TestCase):
+
+    _unsigned = False
 
 class TestTcpSpecific(TestQueriesSetupAndTeardown, unittest.TestCase):
     

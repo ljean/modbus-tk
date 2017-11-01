@@ -24,12 +24,14 @@ LOGGER = modbus_tk.utils.create_logger("udp")
 
 class TestQueriesSetupAndTeardown:
     """This is not a test case, but can be used by Rtu and Tcp test cases"""
-    
+
+    _unsigned = True
+
     def setUp(self):
         self.master = self._get_master()
         self.server = self._get_server()
         
-        self.slave1 = self.server.add_slave(1)
+        self.slave1 = self.server.add_slave(1, unsigned=self._unsigned)
         self.slave1.add_block("hr0-100", modbus_tk.defines.HOLDING_REGISTERS, 0, 100)
         self.slave1.add_block("hr100-100", modbus_tk.defines.HOLDING_REGISTERS, 100, 200)
         self.slave1.add_block("ai100-50", modbus_tk.defines.ANALOG_INPUTS, 100, 150)
@@ -205,15 +207,20 @@ class TestQueries(TestQueriesSetupAndTeardown):
         self.assertEqual((33,), self.slave1.get_values("hr0-100", 10, 1))
         
     def testWriteSingleRegisterNegativeValue(self):
-        """Write a negative value of a single register and check that it is correctly written"""
+        """Write a negative value of a single register and check that it is correctly written
+            If the master is "unisgned" the value will come back positive, otherwise it should
+            be a signed value.
+        """
         result = self.master.execute(1, modbus_tk.defines.WRITE_SINGLE_REGISTER, 0, output_value=-123)
         self.assertEqual((0, 0x10000-123), result)
-        self.assertEqual((0x10000-123,), self.slave1.get_values("hr0-100", 0, 1))
-        
+        output_value = 0x10000 - 123 if self._unsigned else -123
+        self.assertEqual((output_value,), self.slave1.get_values("hr0-100", 0, 1))
+
         result = self.master.execute(1, modbus_tk.defines.WRITE_SINGLE_REGISTER, 10, output_value=-23)
         self.assertEqual((10, 0x10000-23), result)
-        self.assertEqual((0x10000-23,), self.slave1.get_values("hr0-100", 10, 1))
-        
+        output_value = 0x10000 - 23 if self._unsigned else -23
+        self.assertEqual((output_value,), self.slave1.get_values("hr0-100", 10, 1))
+
     def testWriteSingleRegistersOutOfBlocks(self):
         """Check taht an error is raised when writing a register out of block"""
         try:
@@ -264,8 +271,9 @@ class TestQueries(TestQueriesSetupAndTeardown):
         """Write the values of a multiple registers with negative values and check that it is correctly written"""
         result = self.master.execute(1, modbus_tk.defines.WRITE_MULTIPLE_REGISTERS, 0, output_value=(0, -5, 10))
         self.assertEqual((0, 3), result)
-        self.assertEqual((0, 0x10000-5, 10), self.slave1.get_values("hr0-100", 0, 3))
-        
+        signed_value = 0x10000 - 5 if self._unsigned else -5
+        self.assertEqual((0, signed_value, 10), self.slave1.get_values("hr0-100", 0, 3))
+
     def testWriteMultipleRegistersOutOfBlocks(self):
         """Check that an error is raised when writing a register out of block"""
         try:
