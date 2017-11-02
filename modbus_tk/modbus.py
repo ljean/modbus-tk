@@ -181,7 +181,9 @@ class Master(object):
             if function_code == defines.WRITE_SINGLE_COIL:
                 if output_value != 0:
                     output_value = 0xff00
-            fmt = ">BH"+("H" if output_value >= 0 else "h")
+                fmt = ">BHH"
+            else:
+                fmt = ">BH"+("H" if output_value >= 0 else "h")
             pdu = struct.pack(fmt, function_code, starting_address, output_value)
             if not data_format:
                 data_format = ">HH"
@@ -577,10 +579,9 @@ class Slave(object):
 
     def _write_single_coil(self, request_pdu):
         """execute modbus function 5"""
-        fmt = "H" if self.unsigned else "h"
 
         call_hooks("modbus.Slave.handle_write_single_coil_request", (self, request_pdu))
-        (data_address, value) = struct.unpack(">H"+fmt, request_pdu[1:5])
+        (data_address, value) = struct.unpack(">HH", request_pdu[1:5])
         block, offset = self._get_block_and_offset(defines.COILS, data_address, 1)
         if value == 0:
             block[offset] = 0
