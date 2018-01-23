@@ -243,8 +243,13 @@ class RtuServer(Server):
                     response = retval
 
                 if response:
-                    self._serial.write(response)
-                    time.sleep(self.get_timeout())
+                    if self._serial.in_waiting > 0:
+                        # Most likely master timed out on this request and started a new one
+                        # for which we already received atleast 1 byte
+                        LOGGER.warning("Not sending response because there is new request pending")
+                    else:
+                        self._serial.write(response)
+                        time.sleep(self.get_timeout())
 
                 call_hooks("modbus_rtu.RtuServer.after_write", (self, response))
 
