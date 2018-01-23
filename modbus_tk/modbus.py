@@ -829,6 +829,10 @@ class Databank(object):
                 # make the full response
                 response = query.build_response(response_pdu)
                 return response
+        except ModbusInvalidRequestError as excpt:
+            # Request is invalid, do not send any response
+            LOGGER.error("invalid request: " + str(excpt))
+            return ""
         except Exception as excpt:
             call_hooks("modbus.Databank.on_error", (self, excpt, request_pdu))
             LOGGER.error("handle request failed: " + str(excpt))
