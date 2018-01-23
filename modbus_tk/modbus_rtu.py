@@ -98,6 +98,10 @@ class RtuMaster(Master):
         self._serial.inter_byte_timeout = interchar_multiplier * self._t0
         self.set_timeout(interframe_multiplier * self._t0)
 
+        # For some RS-485 adapters, the sent data(echo data) appears before modbus response.
+        # So read  echo data and discard it.  By yush0602@gmail.com
+        self.handle_local_echo = False
+
     def _do_open(self):
         """Open the given serial port if not already opened"""
         if not self._serial.is_open:
@@ -178,10 +182,6 @@ class RtuServer(Server):
         self._t0 = utils.calculate_rtu_inter_char(self._serial.baudrate)
         self._serial.inter_byte_timeout = interchar_multiplier * self._t0
         self.set_timeout(interframe_multiplier * self._t0)
-
-        # For some RS-485 adapters, the sent data(echo data) appears before modbus response.  
-        # So read  echo data and discard it.  By yush0602@gmail.com
-        self.handle_local_echo = False
 
     def close(self):
         """close the serial communication"""
