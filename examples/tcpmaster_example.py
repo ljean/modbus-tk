@@ -14,15 +14,15 @@ from __future__ import print_function
 import modbus_tk
 import modbus_tk.defines as cst
 from modbus_tk import modbus_tcp, hooks
-
+import logging
 
 def main():
     """main"""
-    logger = modbus_tk.utils.create_logger("console")
+    logger = modbus_tk.utils.create_logger("console", level=logging.DEBUG)
 
     def on_after_recv(data):
         master, bytes_data = data
-        print(bytes_data)
+        logger.info(bytes_data)
 
     hooks.install_hook('modbus.Master.after_recv', on_after_recv)
 
@@ -30,13 +30,13 @@ def main():
 
         def on_before_connect(args):
             master = args[0]
-            print("on_before_connect", master._host, master._port)
+            logger.debug("on_before_connect {0} {1}".format(master._host, master._port))
 
         hooks.install_hook("modbus_tcp.TcpMaster.before_connect", on_before_connect)
 
         def on_after_recv(args):
             response = args[1]
-            print("on_after_recv", len(response), "bytes received")
+            logger.debug("on_after_recv {0} bytes received".format(len(response)))
 
         hooks.install_hook("modbus_tcp.TcpMaster.after_recv", on_after_recv)
 
