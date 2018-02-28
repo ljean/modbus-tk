@@ -214,17 +214,18 @@ class RtuServer(Server):
 
     def stop(self):
         """Force the server thread to exit"""
+        # Prevent blocking on first byte in server thread.
+        # Without the _block_on_first_byte following problem could happen:
+        #   1. Current blocking read(1) is cancelled
+        #   2. Server thread resumes and start next read(1)
+        #   3. RtuServer clears go event and waits for thread to finish
+        #   4. Server thread finishes only when a byte is received
+        # Thanks to _block_on_first_byte, if server thread does start new read
+        # it will timeout as it won't be blocking.
+        self._block_on_first_byte = False
         if self._serial.is_open:
-            # Prevent blocking on first byte in server thread and cancel any pending
-            # read from server thread, it most likely is blocking read(1) call
-            # Without the _block_on_first_byte following problem could happen:
-            #   1. Current blocking read(1) is cancelled
-            #   2. Server thread resumes and start next read(1)
-            #   3. RtuServer clears go event and waits for thread to finish
-            #   4. Server thread finishes only when a byte is received
-            # Thanks to _block_on_first_byte, if server thread does start new read
-            # it will timeout as it won't be blocking.
-            self._block_on_first_byte = False
+            # cancel any pending read from server thread, it most likely is
+            # blocking read(1) call
             self._serial.cancel_read()
         super(RtuServer, self).stop()
 
