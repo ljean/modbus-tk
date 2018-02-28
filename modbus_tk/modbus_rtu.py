@@ -183,6 +183,8 @@ class RtuServer(Server):
         self._serial.inter_byte_timeout = interchar_multiplier * self._t0
         self.set_timeout(interframe_multiplier * self._t0)
 
+        self._block_on_first_byte = False
+
     def close(self):
         """close the serial communication"""
         if self._serial.is_open:
@@ -205,8 +207,25 @@ class RtuServer(Server):
         """Returns an instance of a Query subclass implementing the modbus RTU protocol"""
         return RtuQuery()
 
+    def start(self):
+        """Allow the server thread to block on first byte"""
+        self._block_on_first_byte = True
+        super(RtuServer, self).start()
+
     def stop(self):
         """Force the server thread to exit"""
+        if self._serial.is_open:
+            # Prevent blocking on first byte in server thread and cancel any pending
+            # read from server thread, it most likely is blocking read(1) call
+            # Without the _block_on_first_byte following problem could happen:
+            #   1. Current blocking read(1) is cancelled
+            #   2. Server thread resumes and start next read(1)
+            #   3. RtuServer clears go event and waits for thread to finish
+            #   4. Server thread finishes only when a byte is received
+            # Thanks to _block_on_first_byte, if server thread does start new read
+            # it will timeout as it won't be blocking.
+            self._block_on_first_byte = False
+            self._serial.cancel_read()
         super(RtuServer, self).stop()
 
     def _do_init(self):
@@ -225,6 +244,18 @@ class RtuServer(Server):
         try:
             # check the status of every socket
             request = utils.to_data('')
+            if self._block_on_first_byte:
+                # do a blocking read for first byte
+                self._serial.timeout = None
+                try:
+                    read_bytes = self._serial.read(1)
+                    request += read_bytes
+                except Exception as e:
+                    self._serial.close()
+                    self._serial.open()
+                self._serial.timeout = self._timeout
+
+            # Read rest of the request
             while True:
                 try:
                     read_bytes = self._serial.read(128)
