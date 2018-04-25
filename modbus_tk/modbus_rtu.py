@@ -130,6 +130,7 @@ class RtuMaster(Master):
         self._serial.reset_output_buffer()
 
         self._serial.write(request)
+        self._serial.flush()
 
         # Read the echo data, and discard it
         if self.handle_local_echo:
@@ -289,6 +290,7 @@ class RtuServer(Server):
                         LOGGER.warning("Not sending response because there is new request pending")
                     else:
                         self._serial.write(response)
+                        self._serial.flush()
                         time.sleep(self.get_timeout())
 
                 call_hooks("modbus_rtu.RtuServer.after_write", (self, response))
