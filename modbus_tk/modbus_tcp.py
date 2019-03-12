@@ -261,6 +261,7 @@ class TcpServer(Server):
     def _do_init(self):
         """initialize server"""
         self._sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self._sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         if self._timeout_in_sec:
             self._sock.settimeout(self._timeout_in_sec)
         self._sock.setblocking(0)
