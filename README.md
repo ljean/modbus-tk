@@ -57,3 +57,5 @@ Other links
 pymodslave http://sourceforge.net/projects/pymodslave/ : a gui app for simulation purpose built with Qt4 and modbus-tk
 
 modbus-simulator https://github.com/dhoomakethu/kivy-modbus-simu : modbus simulator built with modbus-tk and kivy
+
+MicroPython port by Sean Lannigan : https://gitlab.com/extel-open-source/micropython-modbus .So far it only supports RTU Master mode (i.e. no TCP and no slave mode), as this was all I needed in Sean's MicroPython application - the other modes probably wouldn't be too hard to port.
