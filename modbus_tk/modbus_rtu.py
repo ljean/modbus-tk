@@ -144,7 +144,7 @@ class RtuMaster(Master):
         startTime = time.time()
         while True:
             read_bytes = self._serial.read(expected_length if expected_length > 0 else 1)
-            if not read_bytes and ((time.time()-startTime) > self._serial.timeout or self.use_sw_timeout == False):
+            if not read_bytes and ((time.time()-startTime) > self._serial.timeout or self.use_sw_timeout != True):
                 break
             response += read_bytes
             if expected_length >= 0 and len(response) >= expected_length:
