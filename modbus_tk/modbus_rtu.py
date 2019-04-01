@@ -115,10 +115,12 @@ class RtuMaster(Master):
             call_hooks("modbus_rtu.RtuMaster.after_close", (self, ))
             return True
 
-    def set_timeout(self, timeout_in_sec):
+    def set_timeout(self, timeout_in_sec, use_sw_timeout=False):
         """Change the timeout value"""
         Master.set_timeout(self, timeout_in_sec)
         self._serial.timeout = timeout_in_sec
+        # Use software based timeout in case the timeout functionality provided by the serial port is unreliable
+        self.use_sw_timeout = use_sw_timeout
 
     def _send(self, request):
         """Send request to the slave"""
@@ -142,7 +144,7 @@ class RtuMaster(Master):
         startTime = time.time()
         while True:
             read_bytes = self._serial.read(expected_length if expected_length > 0 else 1)
-            if not read_bytes and (time.time()-startTime) > self._serial.timeout:
+            if not read_bytes and ((time.time()-startTime) > self._serial.timeout or self.use_sw_timeout == False):
                 break
             response += read_bytes
             if expected_length >= 0 and len(response) >= expected_length:
