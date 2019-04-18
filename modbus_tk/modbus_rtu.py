@@ -142,11 +142,14 @@ class RtuMaster(Master):
     def _recv(self, expected_length=-1):
         """Receive the response from the slave"""
         response = utils.to_data("")
-        start_time = time.time()
+        start_time = time.time() if self.use_sw_timeout else 0
         while True:
             read_bytes = self._serial.read(expected_length if expected_length > 0 else 1)
-            read_duration = time.time() - start_time
-            if (not read_bytes) or (self.use_sw_timeout and (read_duration > self._serial.timeout)):
+            if self.use_sw_timeout:
+                read_duration = time.time() - start_time
+            else:
+                read_duration = 0
+            if (not read_bytes) or (read_duration > self._serial.timeout):
                 break
             response += read_bytes
             if expected_length >= 0 and len(response) >= expected_length:
