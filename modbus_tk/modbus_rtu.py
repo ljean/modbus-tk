@@ -88,6 +88,7 @@ class RtuMaster(Master):
     def __init__(self, serial, interchar_multiplier=1.5, interframe_multiplier=3.5, t0=None):
         """Constructor. Pass the pyserial.Serial object"""
         self._serial = serial
+        self.use_sw_timeout = False
         LOGGER.info("RtuMaster %s is %s", self._serial.name, "opened" if self._serial.is_open else "closed")
         super(RtuMaster, self).__init__(self._serial.timeout)
 
@@ -141,15 +142,16 @@ class RtuMaster(Master):
     def _recv(self, expected_length=-1):
         """Receive the response from the slave"""
         response = utils.to_data("")
-        startTime = time.time()
+        start_time = time.time()
         while True:
             read_bytes = self._serial.read(expected_length if expected_length > 0 else 1)
-            if not read_bytes and ((time.time()-startTime) > self._serial.timeout or self.use_sw_timeout != True):
+            read_duration = time.time() - start_time
+            if (not read_bytes) or (self.use_sw_timeout and (read_duration > self._serial.timeout)):
                 break
             response += read_bytes
             if expected_length >= 0 and len(response) >= expected_length:
-                #if the expected number of byte is received consider that the response is done
-                #improve performance by avoiding end-of-response detection by timeout
+                # if the expected number of byte is received consider that the response is done
+                # improve performance by avoiding end-of-response detection by timeout
                 break
 
         retval = call_hooks("modbus_rtu.RtuMaster.after_recv", (self, response))
