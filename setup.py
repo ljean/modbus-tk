@@ -19,10 +19,10 @@ setup(
     description="Implementation of modbus protocol in python",
     long_description='''
     Modbus Test Kit provides implementation of slave and master for Modbus TCP and RTU 
-    The main goal is to be used as testing tools.
+    IT helps to create Modbus app easily with Python
     ''',
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
+        'Development Status :: 5 - Production/Stable',
         'Environment :: Console',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: GNU Library or Lesser General Public License (LGPL)',

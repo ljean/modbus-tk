@@ -279,7 +279,6 @@ class RtuServer(Server):
 
             # parse the request
             if request:
-
                 retval = call_hooks("modbus_rtu.RtuServer.after_read", (self, request))
                 if retval is not None:
                     request = retval

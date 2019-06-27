@@ -1,4 +1,4 @@
- Modbus Test Kit: a python implementation of the modbus protocol for testing purpose
+ Modbus Create Modbus app easily with Python
   ~~~~~
   License for use and distribution
   ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
