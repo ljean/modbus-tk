@@ -18,7 +18,7 @@ setup(
     version=VERSION,
     description="Implementation of modbus protocol in python",
     long_description='''
-    Modbus Test Kit provides implementation of slave and master for Modbus TCP and RTU 
+    Modbus Test Kit provides implementation of slave and master for Modbus TCP and RTU
     IT helps to create Modbus app easily with Python
     ''',
     classifiers=[
@@ -37,7 +37,7 @@ setup(
     maintainer='Luc Jean',
     maintainer_email='luc.jean@gmail.com',
     url='https://github.com/ljean/modbus-tk/',
-    license='LGPL',
+    license='LGPL-2.1-or-later',
     packages=['modbus_tk'],
     platforms=["Linux", "Mac OS X", "Win"],
     install_requires=[
