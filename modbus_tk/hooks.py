@@ -49,6 +49,8 @@ def install_hook(name, fct):
     modbus_tcp.TcpServer.before_send((server, sock, response)) returns modified response or None
     modbus_tcp.TcpServer.on_error((server, sock, excpt))
 
+    modbus_rtu_over_tcp.RtuOverTcpMaster.after_recv((master, response))
+
     modbus.Master.before_send((master, request)) returns modified request or None
     modbus.Master.after_send((master))
     modbus.Master.after_recv((master, response)) returns modified response or None

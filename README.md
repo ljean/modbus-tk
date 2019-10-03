@@ -35,6 +35,7 @@ Features
 ------------------------------------
 * Modbus TCP support for writing masters and slaves
 * Modbus RTU support for writing masters and slaves (requires pyserial)
+* Modbus RTU over TCP support
 * Can be customized with hook mechanism (simulate errors, timeouts...)
 * ready-to use simulator with RPC interface
 * Defines very easily your own memory blocks
