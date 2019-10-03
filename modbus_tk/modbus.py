@@ -833,6 +833,10 @@ class Databank(object):
             # Request is invalid, do not send any response
             LOGGER.error("invalid request: " + str(excpt))
             return ""
+        except MissingKeyError as excpt:
+            # No slave with this ID in server, do not send any response
+            LOGGER.error("handle request failed: " + str(excpt))
+            return ""
         except Exception as excpt:
             call_hooks("modbus.Databank.on_error", (self, excpt, request_pdu))
             LOGGER.error("handle request failed: " + str(excpt))
