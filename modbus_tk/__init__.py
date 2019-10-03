@@ -28,12 +28,13 @@ contributors:
 * Matthew West
 * Vincent Prince
 * kcl93
+* https://github.com/Slasktra
 
 Please let us know if your name is missing!
 
 """
 
-VERSION = '1.0.0'
+VERSION = '1.0.1'
 
 import logging
 LOGGER = logging.getLogger("modbus_tk")
