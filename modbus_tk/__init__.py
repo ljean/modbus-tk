@@ -29,6 +29,7 @@ contributors:
 * Vincent Prince
 * kcl93
 * https://github.com/Slasktra
+* travijuu
 
 Please let us know if your name is missing!
 
