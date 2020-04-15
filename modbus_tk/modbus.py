@@ -135,7 +135,7 @@ class Master(object):
 
     @threadsafe_function
     def execute(
-        self, slave, function_code, starting_address, quantity_of_x=0, output_value=0, data_format="", expected_length=-1):
+        self, slave, function_code, starting_address, quantity_of_x=0, output_value=0, data_format="", expected_length=-1, write_starting_address_FC23=0):
         """
         Execute a modbus query and returns the data part of the answer as a tuple
         The returned tuple depends on the query function code. see modbus protocol
@@ -261,7 +261,7 @@ class Master(object):
             byte_count = 2 * len(output_value)
             pdu = struct.pack(
                 ">BHHHHB",
-                function_code, starting_address, quantity_of_x, defines.READ_WRITE_MULTIPLE_REGISTERS,
+                function_code, starting_address, quantity_of_x, write_starting_address_FC23,
                 len(output_value), byte_count
             )
             for j in output_value:
