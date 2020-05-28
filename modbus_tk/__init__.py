@@ -30,7 +30,7 @@ contributors:
 * kcl93
 * https://github.com/Slasktra
 * travijuu
-
+* Jackson Matheson
 Please let us know if your name is missing!
 
 """
