@@ -211,7 +211,7 @@ class WorkerThread(object):
 
     def stop(self):
         """stop the thread"""
-        if self._thread.isAlive():
+        if self._thread.is_alive():
             self._go.clear()
             self._thread.join()
 
