@@ -31,6 +31,7 @@ contributors:
 * https://github.com/Slasktra
 * travijuu
 * Jackson Matheson
+* SushiTee
 Please let us know if your name is missing!
 
 """
@@ -41,4 +42,4 @@ import logging
 LOGGER = logging.getLogger("modbus_tk")
 
 
-VERSION = '1.1.1'
+VERSION = '1.1.2'
