@@ -919,7 +919,7 @@ class Server(object):
 
     def stop(self):
         """stop the server. It doesn't handle request anymore"""
-        if self._thread.isAlive():
+        if self._thread.is_alive():
             self._go.clear()
             self._thread.join()
 
