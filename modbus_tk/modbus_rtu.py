@@ -143,8 +143,14 @@ class RtuMaster(Master):
         """Receive the response from the slave"""
         response = utils.to_data("")
         start_time = time.time() if self.use_sw_timeout else 0
+        readed_len = 0
         while True:
-            read_bytes = self._serial.read(expected_length if expected_length > 0 else 1)
+            if self._serial.timeout:
+                # serial.read() says if a timeout is set it may return less characters as requested
+                # we should update expected_length by readed_len
+                read_bytes = self._serial.read(expected_length - readed_len if (expected_length - readed_len) > 0 else 1)
+            else:
+                read_bytes = self._serial.read(expected_length if expected_length > 0 else 1)
             if self.use_sw_timeout:
                 read_duration = time.time() - start_time
             else:
@@ -152,10 +158,16 @@ class RtuMaster(Master):
             if (not read_bytes) or (read_duration > self._serial.timeout):
                 break
             response += read_bytes
-            if expected_length >= 0 and len(response) >= expected_length:
+            if expected_length >= 0 and len(response) >= (expected_length + 2):
                 # if the expected number of byte is received consider that the response is done
                 # improve performance by avoiding end-of-response detection by timeout
                 break
+            readed_len += len(read_bytes)
+
+        retval = call_hooks("modbus_rtu.RtuMaster.after_recv", (self, response))
+        if retval is not None:
+            return retval
+        return response
 
         retval = call_hooks("modbus_rtu.RtuMaster.after_recv", (self, response))
         if retval is not None:
