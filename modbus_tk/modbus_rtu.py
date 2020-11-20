@@ -169,11 +169,6 @@ class RtuMaster(Master):
             return retval
         return response
 
-        retval = call_hooks("modbus_rtu.RtuMaster.after_recv", (self, response))
-        if retval is not None:
-            return retval
-        return response
-
     def _make_query(self):
         """Returns an instance of a Query subclass implementing the modbus RTU protocol"""
         return RtuQuery()
