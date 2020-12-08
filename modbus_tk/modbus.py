@@ -929,7 +929,7 @@ class Server(object):
             self._do_init()
             while self._go.isSet():
                 self._do_run()
-            LOGGER.info("%s has stopped", self.__class__)
+            LOGGER.debug("%s has stopped", self.__class__)
             self._do_exit()
         except Exception as excpt:
             LOGGER.error("server error: %s", str(excpt))

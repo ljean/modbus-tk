@@ -89,7 +89,7 @@ class RtuMaster(Master):
         """Constructor. Pass the pyserial.Serial object"""
         self._serial = serial
         self.use_sw_timeout = False
-        LOGGER.info("RtuMaster %s is %s", self._serial.name, "opened" if self._serial.is_open else "closed")
+        LOGGER.debug("RtuMaster %s is %s", self._serial.name, "opened" if self._serial.is_open else "closed")
         super(RtuMaster, self).__init__(self._serial.timeout)
 
         if t0:
@@ -186,7 +186,7 @@ class RtuServer(Server):
         super(RtuServer, self).__init__(databank)
 
         self._serial = serial
-        LOGGER.info("RtuServer %s is %s", self._serial.name, "opened" if self._serial.is_open else "closed")
+        LOGGER.debug("RtuServer %s is %s", self._serial.name, "opened" if self._serial.is_open else "closed")
 
         self._t0 = utils.calculate_rtu_inter_char(self._serial.baudrate)
         self._serial.inter_byte_timeout = interchar_multiplier * self._t0

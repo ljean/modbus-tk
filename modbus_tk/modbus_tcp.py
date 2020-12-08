@@ -293,13 +293,13 @@ class TcpServer(Server):
                     # handle the server socket
                     client, address = self._sock.accept()
                     client.setblocking(0)
-                    LOGGER.info("%s is connected with socket %d...", str(address), client.fileno())
+                    LOGGER.debug("%s is connected with socket %d...", str(address), client.fileno())
                     self._sockets.append(client)
                     call_hooks("modbus_tcp.TcpServer.on_connect", (self, client, address))
                 else:
                     if len(sock.recv(1, socket.MSG_PEEK)) == 0:
                         # socket is disconnected
-                        LOGGER.info("%d is disconnected" % (sock.fileno()))
+                        LOGGER.debug("%d is disconnected" % (sock.fileno()))
                         call_hooks("modbus_tcp.TcpServer.on_disconnect", (self, sock))
                         sock.close()
                         self._sockets.remove(sock)
