@@ -158,7 +158,7 @@ class RtuMaster(Master):
             if (not read_bytes) or (read_duration > self._serial.timeout):
                 break
             response += read_bytes
-            if expected_length >= 0 and len(response) >= (expected_length + 2):
+            if expected_length >= 0 and len(response) >= expected_length:
                 # if the expected number of byte is received consider that the response is done
                 # improve performance by avoiding end-of-response detection by timeout
                 break
