@@ -135,7 +135,7 @@ class Master(object):
 
     @threadsafe_function
     def execute(
-        self, slave, function_code, starting_address, quantity_of_x=0, output_value=0, data_format="", expected_length=-1, write_starting_address_FC23=0):
+        self, slave, function_code, starting_address, quantity_of_x=0, output_value=0, data_format="", expected_length=-1, write_starting_address_FC23=0, pdu = ""):
         """
         Execute a modbus query and returns the data part of the answer as a tuple
         The returned tuple depends on the query function code. see modbus protocol
@@ -144,7 +144,6 @@ class Master(object):
         struct python module documentation
         """
 
-        pdu = ""
         is_read_function = False
         nb_of_digits = 0
 
@@ -274,6 +273,9 @@ class Master(object):
                 # No lenght was specified and calculated length can be used:
                 # slave + func + bytcodeLen + bytecode x 2 + crc1 + crc2
                 expected_length = 2 * quantity_of_x + 5
+        elif function_code == defines.RAW:
+            # caller has to set arguments "pdu", "expected_length", and "data_format"
+            pass	
         else:
             raise ModbusFunctionNotSupportedError("The {0} function code is not supported. ".format(function_code))
 
