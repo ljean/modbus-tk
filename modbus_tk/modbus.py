@@ -371,7 +371,7 @@ class Master(object):
                     ptr = 0
                     while ptr < len(result):
                         sub_seq += ((ptr + 2, ptr + 2 + result[ptr] // 2), )
-                        ptr += result[ptr]//2+2
+                        ptr += result[ptr] // 2 + 2
                     result = tuple(map(lambda sub_seq_x: result[sub_seq_x[0]:sub_seq_x[1]], sub_seq))
                 return result
 
