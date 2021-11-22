@@ -183,9 +183,19 @@ class Master(object):
                 expected_length = 2 * quantity_of_x + 5
 
         elif function_code == defines.READ_FILE_RECORD:
-            is_read_function = True
-            if len(number_file)==len(starting_address)==len(quantity_of_x):
+            is_read_function = True 
+            if (isinstance(number_file, tuple)
+                    and isinstance(starting_address, tuple)
+                    and isinstance(quantity_of_x, tuple)
+                    and len(number_file)==len(starting_address)==len(quantity_of_x)>0
+            ):
                 count_seq=len(number_file)
+            else:
+                raise ModbusInvalidRequestError(
+                    'For function READ_FILE_RECORD param'
+                    'starting_address, quantity_of_x, number_file must be tuple ()'\
+                     'of one length > 0 (by the number of requested sub_seq)'
+                     )
             pdu = struct.pack(">BB", function_code,count_seq*7)+b''.join(map(lambda x: struct.pack(">BHHH",*x), zip(count_seq*(6,),number_file,starting_address,quantity_of_x)))
             if not data_format:
                 data_format = ">BB" + 'BB'.join(map(lambda x: x*'H',quantity_of_x))
