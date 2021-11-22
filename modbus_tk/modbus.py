@@ -139,10 +139,14 @@ class Master(object):
         """
         Execute a modbus query and returns the data part of the answer as a tuple
         The returned tuple depends on the query function code. see modbus protocol
-        specification for details.
-        For function Read_File_Record 
+        specification for details
         data_format makes possible to extract the data like defined in the
         struct python module documentation
+        For function Read_File_Record 
+        starting_address, quantity_of_x, number_file must be tuple () 
+        of one long (by the number of requested sub_seq)
+        the result will be 
+        ((sub _ seq_0 _ data), (sub_seq_1_data),... (sub_seq_N_data)).
         """
 
         pdu = ""
