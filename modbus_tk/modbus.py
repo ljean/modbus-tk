@@ -299,7 +299,7 @@ class Master(object):
             if not data_format:
                 data_format = ">" + (quantity_of_x * "H")
             if expected_length < 0:
-                # No lenght was specified and calculated length can be used:
+                # No length was specified and calculated length can be used:
                 # slave + func + bytcodeLen + bytecode x 2 + crc1 + crc2
                 expected_length = 2 * quantity_of_x + 5
         else:
@@ -453,6 +453,7 @@ class Slave(object):
             defines.WRITE_SINGLE_REGISTER: self._write_single_register,
             defines.WRITE_MULTIPLE_COILS: self._write_multiple_coils,
             defines.WRITE_MULTIPLE_REGISTERS: self._write_multiple_registers,
+            defines.READ_WRITE_MULTIPLE_REGISTERS: self._read_write_multiple_registers,
         }
 
     def _get_block_and_offset(self, block_type, address, length):
@@ -544,6 +545,46 @@ class Slave(object):
         """handle read coils modbus function"""
         call_hooks("modbus.Slave.handle_read_input_registers_request", (self, request_pdu))
         return self._read_registers(defines.ANALOG_INPUTS, request_pdu)
+
+    def _read_write_multiple_registers(self, request_pdu):
+        """execute modbus function 23"""
+        call_hooks("modbus.Slave.handle_read_write_multiple_registers_request", (self, request_pdu))
+        # get the starting address and the number of items from the request pdu
+        (starting_read_address, quantity_of_x_to_read, starting_write_address, quantity_of_x_to_write, byte_count_to_write) = struct.unpack(">HHHHB", request_pdu[1:10])
+
+        # read part
+        if (quantity_of_x_to_read <= 0) or (quantity_of_x_to_read > 125):
+            # maximum allowed size is 125 registers in one reading
+            LOGGER.debug("quantity_of_x_to_read is %d", quantity_of_x_to_read)
+            raise ModbusError(defines.ILLEGAL_DATA_VALUE)
+
+        # look for the block corresponding to the request
+        block, offset = self._get_block_and_offset(defines.HOLDING_REGISTERS, starting_read_address, quantity_of_x_to_read)
+
+        # get the values
+        values = block[offset:offset+quantity_of_x_to_read]
+        # write the response header
+        response = struct.pack(">B", 2 * quantity_of_x_to_read)
+        # add the values of every register on 2 bytes
+        for reg in values:
+            fmt = "H" if self.unsigned else "h"
+            response += struct.pack(">"+fmt, reg)
+
+        # write part
+        if (quantity_of_x_to_write <= 0) or (quantity_of_x_to_write > 123) or (byte_count_to_write != (quantity_of_x_to_write * 2)):
+            # maximum allowed size is 123 registers in one reading
+            raise ModbusError(defines.ILLEGAL_DATA_VALUE)
+
+        # look for the block corresponding to the request
+        block, offset = self._get_block_and_offset(defines.HOLDING_REGISTERS, starting_write_address, quantity_of_x_to_write)
+
+        count = 0
+        for i in range(quantity_of_x_to_write):
+            count += 1
+            fmt = "H" if self.unsigned else "h"
+            block[offset+i] = struct.unpack(">"+fmt, request_pdu[10+2*i:12+2*i])[0]       
+        
+        return response
 
     def _write_multiple_registers(self, request_pdu):
         """execute modbus function 16"""
