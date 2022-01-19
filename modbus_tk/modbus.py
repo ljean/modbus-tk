@@ -449,6 +449,7 @@ class Slave(object):
             defines.READ_DISCRETE_INPUTS: self._read_discrete_inputs,
             defines.READ_INPUT_REGISTERS: self._read_input_registers,
             defines.READ_HOLDING_REGISTERS: self._read_holding_registers,
+            defines.READ_EXCEPTION_STATUS: self._read_exception_status,
             defines.WRITE_SINGLE_COIL: self._write_single_coil,
             defines.WRITE_SINGLE_REGISTER: self._write_single_register,
             defines.WRITE_MULTIPLE_COILS: self._write_multiple_coils,
@@ -545,6 +546,12 @@ class Slave(object):
         """handle read coils modbus function"""
         call_hooks("modbus.Slave.handle_read_input_registers_request", (self, request_pdu))
         return self._read_registers(defines.ANALOG_INPUTS, request_pdu)
+
+    def _read_exception_status(self, request_pdu):
+        """handle read exception status modbus function"""
+        call_hooks("modbus.Slave.handle_read_exception_status_request", (self, request_pdu))
+        response = struct.pack(">B", 0)
+        return response
 
     def _read_write_multiple_registers(self, request_pdu):
         """execute modbus function 23"""
