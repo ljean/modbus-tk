@@ -302,6 +302,20 @@ class Master(object):
                 # No length was specified and calculated length can be used:
                 # slave + func + bytcodeLen + bytecode x 2 + crc1 + crc2
                 expected_length = 2 * quantity_of_x + 5
+
+        elif function_code == defines.DEVICE_INFO:
+            # is_read_function = True
+            mei_type = 0x0E
+            pdu = struct.pack(
+                ">BBBB",
+                # function_code = 43 (0x2B)
+                # MEI Type = 0x0E (Read Device Identification)
+                # output_value[0] = Read Device ID code
+                # output_value[1] = Object Id
+                function_code, mei_type, output_value[0], output_value[1]
+            )
+
+
         else:
             raise ModbusFunctionNotSupportedError("The {0} function code is not supported. ".format(function_code))
 
