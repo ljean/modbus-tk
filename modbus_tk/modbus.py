@@ -364,6 +364,9 @@ class Master(object):
                         raise ModbusInvalidResponseError(
                             "Byte count is {0} while actual number of bytes is {1}. ".format(byte_count, len(data))
                         )
+                elif function_code == defines.DEVICE_INFO:
+                    data = response_pdu[1:]
+                    data_format = ">" + (len(data) * "B")
                 else:
                     # returns what is returned by the slave after a writing function
                     data = response_pdu[1:]
