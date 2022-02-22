@@ -275,9 +275,9 @@ class TcpServer(Server):
         for sock in self._sockets:
             try:
                 sock.close()
-                self._sockets.remove(sock)
             except Exception as msg:
                 LOGGER.warning("Error while closing socket, Exception occurred: %s", msg)
+        self._sockets = []
         self._sock.close()
         self._sock = None
 
