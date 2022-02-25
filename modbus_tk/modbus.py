@@ -16,6 +16,7 @@ from __future__ import with_statement
 
 import struct
 import threading
+import re
 
 from modbus_tk import LOGGER
 from modbus_tk import defines
@@ -135,17 +136,26 @@ class Master(object):
 
     @threadsafe_function
     def execute(
-        self, slave, function_code, starting_address, quantity_of_x=0, output_value=0, data_format="", expected_length=-1, write_starting_address_FC23=0, pdu = ""):
+        self, slave, function_code, starting_address, quantity_of_x=0, output_value=0, data_format="", expected_length=-1, write_starting_address_FC23=0, number_file=None,
+        pdu=""
+    ):
         """
         Execute a modbus query and returns the data part of the answer as a tuple
         The returned tuple depends on the query function code. see modbus protocol
         specification for details
         data_format makes possible to extract the data like defined in the
         struct python module documentation
+        For function Read_File_Record 
+        starting_address, quantity_of_x, number_file must be tuple () 
+        of one long (by the number of requested sub_seq)
+        the result will be 
+        ((sub _ seq_0 _ data), (sub_seq_1_data),... (sub_seq_N_data)).
         """
 
         is_read_function = False
         nb_of_digits = 0
+        if number_file is None:
+          number_file = tuple()
 
         # open the connection if it is not already done
         self.open()
@@ -175,6 +185,29 @@ class Master(object):
                 # No length was specified and calculated length can be used:
                 # slave + func + bytcodeLen + bytecode x 2 + crc1 + crc2
                 expected_length = 2 * quantity_of_x + 5
+
+        elif function_code == defines.READ_FILE_RECORD:
+            is_read_function = True 
+            if (
+                isinstance(number_file, tuple)
+                and isinstance(starting_address, tuple)
+                and isinstance(quantity_of_x, tuple)
+                and len(number_file) == len(starting_address) == len(quantity_of_x) > 0
+            ):
+                count_seq = len(number_file)
+            else:
+                raise ModbusInvalidRequestError(
+                    'For function READ_FILE_RECORD param'\
+                    'starting_address, quantity_of_x, number_file must be tuple()'\
+                    'of one length > 0 (by the number of requested sub_seq)'
+                )
+            pdu = struct.pack(">BB", function_code, count_seq * 7) + b''.join(map(lambda zip_param: struct.pack(">BHHH", *zip_param), zip(count_seq * (6, ), number_file, starting_address, quantity_of_x)))
+            if not data_format:
+                data_format = ">BB" + 'BB'.join(map(lambda x: x*'H', quantity_of_x))
+            if expected_length < 0:
+                # No length was specified and calculated length can be used:
+                # slave + func + bytcodeLen + (byteLenSubReq+byteref+bytecode[] x 2)*countSubReq + crc1 + crc2
+                expected_length = 2 * sum(quantity_of_x) + 2 * count_seq + 5
 
         elif (function_code == defines.WRITE_SINGLE_COIL) or (function_code == defines.WRITE_SINGLE_REGISTER):
             if function_code == defines.WRITE_SINGLE_COIL:
@@ -270,12 +303,26 @@ class Master(object):
             if not data_format:
                 data_format = ">" + (quantity_of_x * "H")
             if expected_length < 0:
-                # No lenght was specified and calculated length can be used:
+                # No length was specified and calculated length can be used:
                 # slave + func + bytcodeLen + bytecode x 2 + crc1 + crc2
                 expected_length = 2 * quantity_of_x + 5
+
         elif function_code == defines.RAW:
             # caller has to set arguments "pdu", "expected_length", and "data_format"
             pass	
+
+        elif function_code == defines.DEVICE_INFO:
+            # is_read_function = True
+            mei_type = 0x0E
+            pdu = struct.pack(
+                ">BBBB",
+                # function_code = 43 (0x2B)
+                # MEI Type = 0x0E (Read Device Identification)
+                # output_value[0] = Read Device ID code
+                # output_value[1] = Object Id
+                function_code, mei_type, output_value[0], output_value[1]
+            )
+
         else:
             raise ModbusFunctionNotSupportedError("The {0} function code is not supported. ".format(function_code))
 
@@ -324,13 +371,19 @@ class Master(object):
                         raise ModbusInvalidResponseError(
                             "Byte count is {0} while actual number of bytes is {1}. ".format(byte_count, len(data))
                         )
+                elif function_code == defines.DEVICE_INFO:
+                    data = response_pdu[1:]
+                    data_format = ">" + (len(data) * "B")
                 else:
                     # returns what is returned by the slave after a writing function
                     data = response_pdu[1:]
 
                 # returns the data as a tuple according to the data_format
                 # (calculated based on the function or user-defined)
-                result = struct.unpack(data_format, data)
+                if (re.match("[>]?[sp]?",data_format)):
+                    result = data.decode()
+                else:
+                    result = struct.unpack(data_format, data)
                 if nb_of_digits > 0:
                     digits = []
                     for byte_val in result:
@@ -340,6 +393,13 @@ class Master(object):
                             digits.append(byte_val % 2)
                             byte_val = byte_val >> 1
                     result = tuple(digits)
+                if function_code == defines.READ_FILE_RECORD:
+                    sub_seq = list()
+                    ptr = 0
+                    while ptr < len(result):
+                        sub_seq += ((ptr + 2, ptr + 2 + result[ptr] // 2), )
+                        ptr += result[ptr] // 2 + 2
+                    result = tuple(map(lambda sub_seq_x: result[sub_seq_x[0]:sub_seq_x[1]], sub_seq))
                 return result
 
     def set_timeout(self, timeout_in_sec):
@@ -416,10 +476,12 @@ class Slave(object):
             defines.READ_DISCRETE_INPUTS: self._read_discrete_inputs,
             defines.READ_INPUT_REGISTERS: self._read_input_registers,
             defines.READ_HOLDING_REGISTERS: self._read_holding_registers,
+            defines.READ_EXCEPTION_STATUS: self._read_exception_status,
             defines.WRITE_SINGLE_COIL: self._write_single_coil,
             defines.WRITE_SINGLE_REGISTER: self._write_single_register,
             defines.WRITE_MULTIPLE_COILS: self._write_multiple_coils,
             defines.WRITE_MULTIPLE_REGISTERS: self._write_multiple_registers,
+            defines.READ_WRITE_MULTIPLE_REGISTERS: self._read_write_multiple_registers,
         }
 
     def _get_block_and_offset(self, block_type, address, length):
@@ -511,6 +573,52 @@ class Slave(object):
         """handle read coils modbus function"""
         call_hooks("modbus.Slave.handle_read_input_registers_request", (self, request_pdu))
         return self._read_registers(defines.ANALOG_INPUTS, request_pdu)
+
+    def _read_exception_status(self, request_pdu):
+        """handle read exception status modbus function"""
+        call_hooks("modbus.Slave.handle_read_exception_status_request", (self, request_pdu))
+        response = struct.pack(">B", 0)
+        return response
+
+    def _read_write_multiple_registers(self, request_pdu):
+        """execute modbus function 23"""
+        call_hooks("modbus.Slave.handle_read_write_multiple_registers_request", (self, request_pdu))
+        # get the starting address and the number of items from the request pdu
+        (starting_read_address, quantity_of_x_to_read, starting_write_address, quantity_of_x_to_write, byte_count_to_write) = struct.unpack(">HHHHB", request_pdu[1:10])
+
+        # read part
+        if (quantity_of_x_to_read <= 0) or (quantity_of_x_to_read > 125):
+            # maximum allowed size is 125 registers in one reading
+            LOGGER.debug("quantity_of_x_to_read is %d", quantity_of_x_to_read)
+            raise ModbusError(defines.ILLEGAL_DATA_VALUE)
+
+        # look for the block corresponding to the request
+        block, offset = self._get_block_and_offset(defines.HOLDING_REGISTERS, starting_read_address, quantity_of_x_to_read)
+
+        # get the values
+        values = block[offset:offset+quantity_of_x_to_read]
+        # write the response header
+        response = struct.pack(">B", 2 * quantity_of_x_to_read)
+        # add the values of every register on 2 bytes
+        for reg in values:
+            fmt = "H" if self.unsigned else "h"
+            response += struct.pack(">"+fmt, reg)
+
+        # write part
+        if (quantity_of_x_to_write <= 0) or (quantity_of_x_to_write > 123) or (byte_count_to_write != (quantity_of_x_to_write * 2)):
+            # maximum allowed size is 123 registers in one reading
+            raise ModbusError(defines.ILLEGAL_DATA_VALUE)
+
+        # look for the block corresponding to the request
+        block, offset = self._get_block_and_offset(defines.HOLDING_REGISTERS, starting_write_address, quantity_of_x_to_write)
+
+        count = 0
+        for i in range(quantity_of_x_to_write):
+            count += 1
+            fmt = "H" if self.unsigned else "h"
+            block[offset+i] = struct.unpack(">"+fmt, request_pdu[10+2*i:12+2*i])[0]       
+        
+        return response
 
     def _write_multiple_registers(self, request_pdu):
         """execute modbus function 16"""
