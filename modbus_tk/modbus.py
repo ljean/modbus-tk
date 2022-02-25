@@ -136,8 +136,8 @@ class Master(object):
 
     @threadsafe_function
     def execute(
-        self, slave, function_code, starting_address, quantity_of_x=0, output_value=0, data_format="", expected_length=-1, write_starting_address_FC23=0, number_file=None,
-        pdu=""
+        self, slave, function_code, starting_address, quantity_of_x=0, output_value=0, data_format="",
+        expected_length=-1, write_starting_address_fc23=0, number_file=None, pdu=""
     ):
         """
         Execute a modbus query and returns the data part of the answer as a tuple
@@ -155,7 +155,7 @@ class Master(object):
         is_read_function = False
         nb_of_digits = 0
         if number_file is None:
-          number_file = tuple()
+            number_file = tuple()
 
         # open the connection if it is not already done
         self.open()
@@ -197,8 +197,8 @@ class Master(object):
                 count_seq = len(number_file)
             else:
                 raise ModbusInvalidRequestError(
-                    'For function READ_FILE_RECORD param'\
-                    'starting_address, quantity_of_x, number_file must be tuple()'\
+                    'For function READ_FILE_RECORD param'
+                    'starting_address, quantity_of_x, number_file must be tuple()'
                     'of one length > 0 (by the number of requested sub_seq)'
                 )
             pdu = struct.pack(">BB", function_code, count_seq * 7) + b''.join(map(lambda zip_param: struct.pack(">BHHH", *zip_param), zip(count_seq * (6, ), number_file, starting_address, quantity_of_x)))
@@ -293,7 +293,7 @@ class Master(object):
             byte_count = 2 * len(output_value)
             pdu = struct.pack(
                 ">BHHHHB",
-                function_code, starting_address, quantity_of_x, write_starting_address_FC23,
+                function_code, starting_address, quantity_of_x, write_starting_address_fc23,
                 len(output_value), byte_count
             )
             for j in output_value:
