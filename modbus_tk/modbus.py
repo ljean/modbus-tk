@@ -136,7 +136,9 @@ class Master(object):
 
     @threadsafe_function
     def execute(
-        self, slave, function_code, starting_address, quantity_of_x=0, output_value=0, data_format="", expected_length=-1, write_starting_address_FC23=0, number_file=tuple()):
+        self, slave, function_code, starting_address, quantity_of_x=0, output_value=0, data_format="", expected_length=-1, write_starting_address_FC23=0, number_file=None,
+        pdu=""
+    ):
         """
         Execute a modbus query and returns the data part of the answer as a tuple
         The returned tuple depends on the query function code. see modbus protocol
@@ -150,9 +152,10 @@ class Master(object):
         ((sub _ seq_0 _ data), (sub_seq_1_data),... (sub_seq_N_data)).
         """
 
-        pdu = ""
         is_read_function = False
         nb_of_digits = 0
+        if number_file is None:
+          number_file = tuple()
 
         # open the connection if it is not already done
         self.open()
@@ -304,6 +307,10 @@ class Master(object):
                 # slave + func + bytcodeLen + bytecode x 2 + crc1 + crc2
                 expected_length = 2 * quantity_of_x + 5
 
+        elif function_code == defines.RAW:
+            # caller has to set arguments "pdu", "expected_length", and "data_format"
+            pass	
+
         elif function_code == defines.DEVICE_INFO:
             # is_read_function = True
             mei_type = 0x0E
@@ -315,7 +322,6 @@ class Master(object):
                 # output_value[1] = Object Id
                 function_code, mei_type, output_value[0], output_value[1]
             )
-
 
         else:
             raise ModbusFunctionNotSupportedError("The {0} function code is not supported. ".format(function_code))
