@@ -77,6 +77,7 @@ def install_hook(name, fct):
 
     modbus.Server.before_handle_request((server, request)) returns modified request or None
     modbus.Server.after_handle_request((server, response)) returns modified response or None
+    modbus.Server.on_exception((server, excpt))
     """
     with _LOCK:
         try:

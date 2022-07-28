@@ -145,10 +145,10 @@ class Master(object):
         specification for details
         data_format makes possible to extract the data like defined in the
         struct python module documentation
-        For function Read_File_Record 
-        starting_address, quantity_of_x, number_file must be tuple () 
+        For function Read_File_Record
+        starting_address, quantity_of_x, number_file must be tuple ()
         of one long (by the number of requested sub_seq)
-        the result will be 
+        the result will be
         ((sub _ seq_0 _ data), (sub_seq_1_data),... (sub_seq_N_data)).
         """
 
@@ -187,7 +187,7 @@ class Master(object):
                 expected_length = 2 * quantity_of_x + 5
 
         elif function_code == defines.READ_FILE_RECORD:
-            is_read_function = True 
+            is_read_function = True
             if (
                 isinstance(number_file, tuple)
                 and isinstance(starting_address, tuple)
@@ -309,7 +309,7 @@ class Master(object):
 
         elif function_code == defines.RAW:
             # caller has to set arguments "pdu", "expected_length", and "data_format"
-            pass	
+            pass
 
         elif function_code == defines.DEVICE_INFO:
             # is_read_function = True
@@ -616,8 +616,8 @@ class Slave(object):
         for i in range(quantity_of_x_to_write):
             count += 1
             fmt = "H" if self.unsigned else "h"
-            block[offset+i] = struct.unpack(">"+fmt, request_pdu[10+2*i:12+2*i])[0]       
-        
+            block[offset+i] = struct.unpack(">"+fmt, request_pdu[10+2*i:12+2*i])[0]
+
         return response
 
     def _write_multiple_registers(self, request_pdu):
@@ -1043,6 +1043,7 @@ class Server(object):
             self._do_exit()
         except Exception as excpt:
             LOGGER.error("server error: %s", str(excpt))
+            call_hooks("modbus.Server.on_exception", (self, excpt))
         # make possible to rerun in future
         self._make_thread()
 
