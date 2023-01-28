@@ -137,7 +137,7 @@ class Master(object):
     @threadsafe_function
     def execute(
         self, slave, function_code, starting_address, quantity_of_x=0, output_value=0, data_format="",
-        expected_length=-1, write_starting_address_fc23=0, number_file=None, pdu="", returns_raw=False
+        expected_length=-1, write_starting_address_fc23=0, number_file=None, pdu="", returns_raw=False, and_mask=-1, or_mask=-1
     ):
         """
         Execute a modbus query and returns the data part of the answer as a tuple
@@ -224,6 +224,20 @@ class Master(object):
                 # No length was specified and calculated length can be used:
                 # slave + func + adress1 + adress2 + value1+value2 + crc1 + crc2
                 expected_length = 8
+
+        elif function_code == defines.MASK_WRITE_REGISTER:
+            if and_mask < 0:
+                raise ModbusInvalidRequestError("and_mask value must be in the range [0,65535]")
+            if or_mask < 0:
+                raise ModbusInvalidRequestError("or_mask value must be in the range [0,65535]")
+            fmt = ">BHHH"
+            pdu = struct.pack(fmt, function_code, starting_address, and_mask, or_mask)
+            if not data_format:
+                data_format = ">HHH"
+            if expected_length < 0:
+                # No length was specified and calculated length can be used:
+                # slave + func + adress1 + adress2 + and_mask1 + and_mask2 + or_mask1 + or_mask2 + crc1 + crc2
+                expected_length = 10
 
         elif function_code == defines.WRITE_MULTIPLE_COILS:
             byte_count = len(output_value) // 8
@@ -627,7 +641,7 @@ class Slave(object):
 
         (data_address, and_mask, or_mask) = struct.unpack(">HHH", request_pdu[1:7])
         # look for the block corresponding to the request
-        block, offset = self._get_block_and_offset(defines.HOLDING_REGISTERS, address, 1)
+        block, offset = self._get_block_and_offset(defines.HOLDING_REGISTERS, data_address, 1)
         block[offset] = (block[offset] & and_mask) | (or_mask & ~and_mask)
         # returns echo of the command
         return request_pdu[1:]

@@ -306,6 +306,17 @@ class TestQueries(TestQueriesSetupAndTeardown):
         self.assertEqual((1000, 1968), result)
         self.assertEqual(tuple([1]*1968), self.slave1.get_values("c1000-4000", 1000, 1968))
 
+    def testMaskWriteRegister(self):
+        """Mask write the values of a holding register and check that it is correctly written"""
+        self.slave1.set_values("hr0-100", 10, [0])
+        result = self.master.execute(1, modbus_tk.defines.MASK_WRITE_REGISTER, 10, and_mask=0xEEEE, or_mask=0xFFFF)
+        self.assertEqual((10, 0xEEEE, 0xFFFF), result)
+        self.assertEqual((0x1111,), self.slave1.get_values("hr0-100", 10, 1))
+
+        result = self.master.execute(1, modbus_tk.defines.MASK_WRITE_REGISTER, 10, and_mask=0xFF00, or_mask=0xF0F0)
+        self.assertEqual((10, 0xFF00, 0xF0F0), result)
+        self.assertEqual((0xF011,), self.slave1.get_values("hr0-100", 10, 1))
+
     def testWriteMultipleCoilsOffByOne(self):
         """Test that correct coils are written at range edges by writing range within range"""
         result = self.master.execute(1, modbus_tk.defines.WRITE_MULTIPLE_COILS, 0, output_value=[1]*20)
