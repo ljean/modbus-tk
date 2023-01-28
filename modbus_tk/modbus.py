@@ -481,6 +481,7 @@ class Slave(object):
             defines.WRITE_SINGLE_REGISTER: self._write_single_register,
             defines.WRITE_MULTIPLE_COILS: self._write_multiple_coils,
             defines.WRITE_MULTIPLE_REGISTERS: self._write_multiple_registers,
+            defines.MASK_WRITE_REGISTER: self._mask_write_register,
             defines.READ_WRITE_MULTIPLE_REGISTERS: self._read_write_multiple_registers,
         }
 
@@ -619,6 +620,17 @@ class Slave(object):
             block[offset+i] = struct.unpack(">"+fmt, request_pdu[10+2*i:12+2*i])[0]
 
         return response
+
+    def _mask_write_register(self, request_pdu):
+        """execute modbus function 22"""
+        call_hooks("modbus.Slave.handle_mask_write_register_request", (self, request_pdu))
+
+        (data_address, and_mask, or_mask) = struct.unpack(">HHH", request_pdu[1:7])
+        # look for the block corresponding to the request
+        block, offset = self._get_block_and_offset(defines.HOLDING_REGISTERS, address, 1)
+        block[offset] = (block[offset] & and_mask) | (or_mask & ~and_mask)
+        # returns echo of the command
+        return request_pdu[1:]
 
     def _write_multiple_registers(self, request_pdu):
         """execute modbus function 16"""

@@ -64,6 +64,7 @@ def install_hook(name, fct):
     modbus.Slave.handle_read_holding_registers_request((slave, request_pdu)) returns modified response or None
     modbus.Slave.handle_read_discrete_inputs_request((slave, request_pdu)) returns modified response or None
     modbus.Slave.handle_read_coils_request((slave, request_pdu)) returns modified response or None
+    modbus.Slave.handle_mask_write_register_request((slave, request_pdu)) returns modified response or None
     modbus.Slave.handle_read_write_multiple_registers_request((slave, request_pdu)) returns modified response or None
     modbus.Slave.handle_read_exception_status_request((slave, request_pdu)) returns modified response or None
 
