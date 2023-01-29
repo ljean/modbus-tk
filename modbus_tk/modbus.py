@@ -380,7 +380,7 @@ class Master(object):
 
                 # returns the data as a tuple according to the data_format
                 # (calculated based on the function or user-defined)
-                if (re.match("[>]?[sp]?",data_format)):
+                if re.match("[>]?[sp]&", data_format):
                     result = data.decode()
                 else:
                     result = struct.unpack(data_format, data)
