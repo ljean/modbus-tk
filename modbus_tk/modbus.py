@@ -137,7 +137,7 @@ class Master(object):
     @threadsafe_function
     def execute(
         self, slave, function_code, starting_address, quantity_of_x=0, output_value=0, data_format="",
-        expected_length=-1, write_starting_address_fc23=0, number_file=None, pdu=""
+        expected_length=-1, write_starting_address_fc23=0, number_file=None, pdu="", returns_raw=False
     ):
         """
         Execute a modbus query and returns the data part of the answer as a tuple
@@ -145,6 +145,7 @@ class Master(object):
         specification for details
         data_format makes possible to extract the data like defined in the
         struct python module documentation
+        if returns_raw is set to True, the data is returned as it is without taking data_format into account
         For function Read_File_Record
         starting_address, quantity_of_x, number_file must be tuple ()
         of one long (by the number of requested sub_seq)
@@ -380,10 +381,9 @@ class Master(object):
 
                 # returns the data as a tuple according to the data_format
                 # (calculated based on the function or user-defined)
-                if (re.match("[>]?[sp]?",data_format)):
-                    result = data.decode()
-                else:
-                    result = struct.unpack(data_format, data)
+                if returns_raw:
+                    return data
+                result = struct.unpack(data_format, data)
                 if nb_of_digits > 0:
                     digits = []
                     for byte_val in result:
