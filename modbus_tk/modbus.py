@@ -84,6 +84,7 @@ class Master(object):
         """Constructor: can define a timeout"""
         self._timeout = timeout_in_sec
         self._verbose = False
+        self._print_in_hex = False
         self._is_opened = False
 
     def __del__(self):
@@ -93,6 +94,10 @@ class Master(object):
     def set_verbose(self, verbose):
         """print some more log prints for debug purpose"""
         self._verbose = verbose
+    
+    def print_telegrams_in_hex(self, print_in_hex):
+        """print telegrams in hex format"""
+        self._print_in_hex = print_in_hex
 
     def open(self):
         """open the communication with the slave"""
@@ -352,7 +357,7 @@ class Master(object):
         if retval is not None:
             request = retval
         if self._verbose:
-            LOGGER.debug(get_log_buffer("-> ", request))
+            LOGGER.debug(get_log_buffer("-> ", request, self._print_in_hex))
         self._send(request)
 
         call_hooks("modbus.Master.after_send", (self, ))
@@ -364,7 +369,7 @@ class Master(object):
             if retval is not None:
                 response = retval
             if self._verbose:
-                LOGGER.debug(get_log_buffer("<- ", response))
+                LOGGER.debug(get_log_buffer("<- ", response, self._print_in_hex))
 
             # extract the pdu part of the response
             response_pdu = query.parse_response(response)
@@ -1077,7 +1082,7 @@ class Server(object):
         """handle a received sentence"""
 
         if self._verbose:
-            LOGGER.debug(get_log_buffer("-->", request))
+            LOGGER.debug(get_log_buffer("-->", request, self._print_in_hex))
 
         # gets a query for analyzing the request
         query = self._make_query()
@@ -1092,5 +1097,5 @@ class Server(object):
             response = retval
 
         if response and self._verbose:
-            LOGGER.debug(get_log_buffer("<--", response))
+            LOGGER.debug(get_log_buffer("<--", response, self._print_in_hex))
         return response
