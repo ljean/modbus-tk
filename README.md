@@ -5,7 +5,7 @@ modbus-tk: Create Modbus app easily with Python
 
 Download / Install
 ------------------------------------
-Current version is 1.1.2 It is available on PyPI https://pypi.python.org/pypi/modbus_tk
+Current version is 1.1.3 It is available on PyPI https://pypi.python.org/pypi/modbus_tk
 
 License
 ------------------------------------
@@ -49,9 +49,9 @@ Feedback is welcomed! Please enter an issue for giving your feedback.
 
 Follow modbus-tk
 ------------------------------------
-Follow on twitter : http://twitter.com/#!/luc_apidev
+Follow on Bluesky : https://bsky.app/profile/cmlj.bsky.social
 
-Company web site : <http://www.apidev.fr/>
+Company website : <http://www.apidev.fr/>
 
 Other links
 ------------------------------------
