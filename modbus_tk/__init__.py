@@ -42,4 +42,4 @@ import logging
 LOGGER = logging.getLogger("modbus_tk")
 
 
-VERSION = '1.1.4'
+VERSION = '1.1.5'
