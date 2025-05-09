@@ -357,7 +357,7 @@ class Master(object):
 
         call_hooks("modbus.Master.after_send", (self, ))
 
-        if slave != 0:
+        if slave is not None:
             # receive the data from the slave
             response = self._recv(expected_length)
             retval = call_hooks("modbus.Master.after_recv", (self, response))
