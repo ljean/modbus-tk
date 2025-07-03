@@ -1063,7 +1063,7 @@ class Server(object):
         """main function of the main thread"""
         try:
             self._do_init()
-            while self._go.isSet():
+            while self._go.is_set():
                 self._do_run()
             LOGGER.debug("%s has stopped", self.__class__)
             self._do_exit()
