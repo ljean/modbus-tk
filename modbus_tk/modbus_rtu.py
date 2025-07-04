@@ -274,6 +274,8 @@ class RtuServer(Server):
 
             # Read rest of the request
             while True:
+                # Add delays to avoid corrupting packages. (For use with FT232-RS485 device.)
+                time.sleep(0.001)
                 try:
                     read_bytes = self._serial.read(128)
                     if not read_bytes:
