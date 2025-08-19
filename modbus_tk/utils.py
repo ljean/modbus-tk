@@ -61,11 +61,14 @@ def flush_socket(socks, lim=0):
                 raise Exception("flush_socket: maximum number of iterations reached")
 
 
-def get_log_buffer(prefix, buff):
+def get_log_buffer(prefix, buff, print_in_hex = False):
     """Format binary data into a string for debug purpose"""
     log = prefix
     for i in buff:
-        log += str(ord(i) if PY2 else i) + "-"
+        if print_in_hex == True:
+            log += format(i, '02x') + "-"
+        else: 
+            log += str(ord(i) if PY2 else i) + "-"
     return log[:-1]
 
 
