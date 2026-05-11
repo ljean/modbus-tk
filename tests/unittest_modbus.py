@@ -21,6 +21,72 @@ from modbus_tk.hooks import install_hook
 LOGGER = modbus_tk.utils.create_logger("udp")
 
 
+class TestMasterThreadSafety(unittest.TestCase):
+    class _Query(modbus_tk.modbus.Query):
+        def build_request(self, pdu, slave):
+            return pdu
+
+        def parse_response(self, response):
+            return response
+
+    class _BlockingMaster(modbus_tk.modbus.Master):
+        def __init__(self, entered, release):
+            modbus_tk.modbus.Master.__init__(self, 1.0)
+            self.entered = entered
+            self.release = release
+
+        def _do_open(self):
+            pass
+
+        def _do_close(self):
+            return True
+
+        def _send(self, buf):
+            self.entered.set()
+            self.release.wait(1.0)
+
+        def _recv(self, expected_length):
+            return struct.pack(">BBH", modbus_tk.defines.READ_HOLDING_REGISTERS, 2, 42)
+
+        def _make_query(self):
+            return TestMasterThreadSafety._Query()
+
+    def _execute_in_thread(self, master, results, errors):
+        try:
+            results.append(
+                master.execute(1, modbus_tk.defines.READ_HOLDING_REGISTERS, 0, 1)
+            )
+        except Exception as excpt:
+            errors.append(excpt)
+
+    def testDifferentMastersDoNotShareExecuteLock(self):
+        """Different physical links should not serialize on one global execute lock"""
+        release = threading.Event()
+        master1_entered = threading.Event()
+        master2_entered = threading.Event()
+        results = []
+        errors = []
+
+        master1 = self._BlockingMaster(master1_entered, release)
+        master2 = self._BlockingMaster(master2_entered, release)
+
+        thread1 = threading.Thread(target=self._execute_in_thread, args=(master1, results, errors))
+        thread2 = threading.Thread(target=self._execute_in_thread, args=(master2, results, errors))
+
+        try:
+            thread1.start()
+            self.assertTrue(master1_entered.wait(1.0))
+            thread2.start()
+            self.assertTrue(master2_entered.wait(0.2))
+        finally:
+            release.set()
+            thread1.join()
+            thread2.join()
+
+        self.assertEqual([], errors)
+        self.assertEqual([(42,), (42,)], results)
+
+
 class TestSlaveRequestHandler(unittest.TestCase):
     def setUp(self):
         self._slave = modbus_tk.modbus.Slave(0)
