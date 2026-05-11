@@ -31,15 +31,16 @@ def threadsafe_function(fcn):
            Unless kwargs['threadsafe'] == False
         """
         threadsafe = kwargs.pop('threadsafe', True)
+        current_lock = getattr(args[0], '_threadsafe_lock', lock) if args else lock
         if threadsafe:
-            lock.acquire()
+            current_lock.acquire()
         try:
             ret = fcn(*args, **kwargs)
         except Exception as excpt:
             raise excpt
         finally:
             if threadsafe:
-                lock.release()
+                current_lock.release()
         return ret
     return new
 

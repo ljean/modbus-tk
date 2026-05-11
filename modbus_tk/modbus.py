@@ -85,6 +85,7 @@ class Master(object):
         self._timeout = timeout_in_sec
         self._verbose = False
         self._is_opened = False
+        self._threadsafe_lock = threading.RLock()
 
     def __del__(self):
         """Destructor: close the connection"""
