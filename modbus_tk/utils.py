@@ -44,12 +44,24 @@ def threadsafe_function(fcn):
     return new
 
 
+def _select_sockets(socks, timeout):
+    """Wait for readable sockets without the Unix select() descriptor limit."""
+    poll_factory = getattr(select, "poll", None)
+    if poll_factory is None:
+        return select.select(socks, [], [], timeout)[0]
+    poller = poll_factory()
+    for sock in socks:
+        poller.register(sock, select.POLLIN)
+    ready = set(fd for fd, event in poller.poll(int(timeout * 1000)))
+    return [sock for sock in socks if sock.fileno() in ready]
+
+
 def flush_socket(socks, lim=0):
     """remove the data present on the socket"""
     input_socks = [socks]
     cnt = 0
     while True:
-        i_socks = select.select(input_socks, input_socks, input_socks, 0.0)[0]
+        i_socks = _select_sockets(input_socks, 0.0)
         if len(i_socks) == 0:
             break
         for sock in i_socks:
