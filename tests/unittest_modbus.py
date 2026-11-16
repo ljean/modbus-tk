@@ -36,6 +36,69 @@ class TestSlaveRequestHandler(unittest.TestCase):
         self.assertEqual(response, self._slave.handle_request(struct.pack(">B", func_code)))
         self.assertEqual(response, self._slave.handle_request(struct.pack(">BHHHH", func_code, 1, 2, 3, 4)))
 
+    def testHandleRequestHookException(self):
+        """A pre-dispatch hook can simulate an ordinary Modbus error."""
+        hook_name = "modbus.Slave.handle_request"
+        exception_hook = "modbus.Slave.on_exception"
+        error = modbus_tk.modbus.ModbusError(modbus_tk.defines.SLAVE_DEVICE_FAILURE)
+        observed = []
+
+        def reject_request(args):
+            self.assertIs(args[0], self._slave)
+            raise error
+
+        def on_exception(args):
+            observed.append(args)
+
+        install_hook(hook_name, reject_request)
+        install_hook(exception_hook, on_exception)
+        try:
+            for function_code in (3, 6, 55):
+                request = struct.pack(">BHH", function_code, 0, 1)
+                self.assertEqual(
+                    struct.pack(">BB", function_code + 128, error.get_exception_code()),
+                    self._slave.handle_request(request))
+                self.assertEqual(observed[-1], (self._slave, function_code, error))
+        finally:
+            modbus_tk.hooks.uninstall_hook(hook_name, reject_request)
+            modbus_tk.hooks.uninstall_hook(exception_hook, on_exception)
+
+        self._slave.add_block(self._name, modbus_tk.defines.HOLDING_REGISTERS, 0, 1)
+        self._slave.set_values(self._name, 0, [17])
+        self.assertEqual(b"\x03\x02\x00\x11",
+                         self._slave.handle_request(b"\x03\x00\x00\x00\x01"))
+
+    def testHandleRequestHookOverride(self):
+        """Hooks still override requests before normal PDU validation."""
+        hook_name = "modbus.Slave.handle_request"
+
+        def override_request(args):
+            self.assertEqual(args, (self._slave, b""))
+            return b"custom response"
+
+        install_hook(hook_name, override_request)
+        try:
+            self.assertEqual(b"custom response", self._slave.handle_request(b""))
+        finally:
+            modbus_tk.hooks.uninstall_hook(hook_name, override_request)
+        self.assertRaises(struct.error, self._slave.handle_request, b"")
+
+    def testHandleRequestHookUnexpectedError(self):
+        """Non-protocol hook failures must retain their original exception."""
+        hook_name = "modbus.Slave.handle_request"
+        error = RuntimeError("hook failed")
+
+        def fail_request(args):
+            raise error
+
+        install_hook(hook_name, fail_request)
+        try:
+            with self.assertRaises(RuntimeError) as raised:
+                self._slave.handle_request(b"\x03\x00\x00\x00\x01")
+            self.assertIs(raised.exception, error)
+        finally:
+            modbus_tk.hooks.uninstall_hook(hook_name, fail_request)
+
     def _read_digital_data(self, function, block_type):
         self._slave.add_block(self._name, block_type, 0, 128)
         list_of_coils = ((1, 0, 2, 1), (0, ), (1, ), [0, 1]*20, [1]*128, [1, 0, 1]*7, (1, 0, 0, 1), [1, 0]*20)
