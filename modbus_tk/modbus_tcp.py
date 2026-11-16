@@ -10,7 +10,6 @@
 """
 
 import socket
-import select
 import struct
 
 from modbus_tk import LOGGER
@@ -19,7 +18,7 @@ from modbus_tk.modbus import (
     Databank, Master, Query, Server,
     InvalidArgumentError, ModbusInvalidResponseError, ModbusInvalidRequestError
 )
-from modbus_tk.utils import threadsafe_function, flush_socket, to_data
+from modbus_tk.utils import threadsafe_function, flush_socket, to_data, _select_sockets
 
 
 #-------------------------------------------------------------------------------
@@ -284,7 +283,7 @@ class TcpServer(Server):
     def _do_run(self):
         """called in a almost-for-ever loop by the server"""
         # check the status of every socket
-        inputready = select.select(self._sockets, [], [], 1.0)[0]
+        inputready = _select_sockets(self._sockets, 1.0)
 
         # handle data on each a socket
         for sock in inputready:
