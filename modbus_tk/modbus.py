@@ -769,6 +769,8 @@ class Slave(object):
                 raise Exception("No response for function %d" % function_code)
 
             except ModbusError as excpt:
+                # A request hook can raise before the normal function-code lookup.
+                (function_code, ) = struct.unpack(">B", request_pdu[0:1])
                 LOGGER.debug(str(excpt))
                 call_hooks("modbus.Slave.on_exception", (self, function_code, excpt))
                 return struct.pack(">BB", function_code+128, excpt.get_exception_code())
