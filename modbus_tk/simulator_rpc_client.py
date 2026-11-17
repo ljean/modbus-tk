@@ -12,6 +12,7 @@ from __future__ import print_function
 
 import socket
 import modbus_tk.defines
+import modbus_tk.utils
 
 
 class SimulatorRpcClient(object):
@@ -26,11 +27,22 @@ class SimulatorRpcClient(object):
     def _rpc_call(self, query):
         """send a rpc call and return the result"""
         sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        sock.settimeout(self.timeout)
-        sock.connect((self.host, self.port))
-        sock.send(query)
-        response = sock.recv(1024)
-        sock.close()
+        try:
+            sock.settimeout(self.timeout)
+            sock.connect((self.host, self.port))
+            data = query.encode("utf-8") if modbus_tk.utils.PY3 else query
+            sock.sendall(data)
+            chunks = []
+            while True:
+                chunk = sock.recv(1024)
+                if not chunk:
+                    break
+                chunks.append(chunk)
+            response = b"".join(chunks)
+        finally:
+            sock.close()
+        if modbus_tk.utils.PY3:
+            response = response.decode("utf-8")
         return self._response_to_values(response.strip("\r\n"), query.split(" ")[0])
 
     def _response_to_values(self, response, command):
