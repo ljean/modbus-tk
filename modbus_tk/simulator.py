@@ -91,12 +91,16 @@ class RpcHandler(SocketServer.BaseRequestHandler):
         # self.request is the TCP socket connected to the client
         # read the incoming command
         request = self.request.recv(1024).strip()
+        if modbus_tk.utils.PY3:
+            request = request.decode("utf-8")
         # write to the queue waiting to be processed by the server
         INPUT_QUEUE.put(request)
         # wait for the server answer in the output queue
         response = OUTPUT_QUEUE.get(timeout=5.0)
         # send back the answer
-        self.request.send(response)
+        if modbus_tk.utils.PY3:
+            response = response.encode("utf-8")
+        self.request.sendall(response)
 
 
 class RpcInterface(threading.Thread):
