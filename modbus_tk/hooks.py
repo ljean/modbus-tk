@@ -97,14 +97,19 @@ def uninstall_hook(name, fct=None):
 
 
 def call_hooks(name, args):
-    """call the function associated with the hook and pass the given args"""
+    """Call a snapshot of the functions associated with the hook.
+
+    Registration changes take effect on subsequent calls. Callbacks run without
+    the registry lock and must protect any shared state they access themselves.
+    """
     with _LOCK:
-        try:
-            for fct in _HOOKS[name]:
-                retval = fct(args)
-                if retval is not None:
-                    return retval
-        except KeyError:
-            pass
-        return None
+        callbacks = list(_HOOKS.get(name, ()))
+    try:
+        for fct in callbacks:
+            retval = fct(args)
+            if retval is not None:
+                return retval
+    except KeyError:
+        pass
+    return None
 
